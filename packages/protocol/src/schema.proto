@@ -1,0 +1,30 @@
+//
+// Copyright 2019 Wireline, Inc.
+//
+
+syntax = "proto3";
+
+package dxos.protocol;
+
+message Request {
+  bytes id = 1;
+  bytes error = 2;
+  bytes data = 3;
+  bytes options = 4;
+}
+
+// TODO(burdon): Rename. Move from protocol package.
+message PeerChatMessage {
+  string type = 1;
+  bytes data = 2;
+}
+
+message Presence {
+  message Connection {
+    bytes peerId = 1;
+    bool initiator = 2;
+  }
+
+  bytes from = 1;
+  repeated Connection connections = 2;
+}

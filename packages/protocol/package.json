@@ -1,8 +1,8 @@
 {
-  "name": "@dxos/protocol-plugin-template",
+  "name": "@dxos/protocol",
   "version": "0.0.1",
-  "description": "Template.",
-  "homepage": "https://github.com/dxos/protocol/tree/master/packages/protocol-plugin-template#readme",
+  "description": "Protocol.",
+  "homepage": "https://github.com/dxos/protocol/tree/master/packages/protocol#readme",
   "bugs": {
     "url": "https://github.com/dxos/protocol/issues"
   },
@@ -36,12 +36,19 @@
     "testEnvironment": "node"
   },
   "dependencies": {
+    "@dxos/broadcast": "^0.0.1",
+    "@dxos/codec-protobuf": "^1.1.0-beta.2",
     "debug": "^4.1.1",
-    "source-map-support": "^0.5.12"
+    "end-of-stream": "^1.4.1",
+    "humanhash": "^1.0.4",
+    "hypercore-protocol": "^6.11.1",
+    "source-map-support": "^0.5.12",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.7.0",
     "@babel/core": "^7.4.5",
+    "@babel/plugin-proposal-class-properties": "^7.7.4",
     "@babel/plugin-proposal-export-default-from": "^7.5.2",
     "@babel/preset-env": "^7.4.5",
     "babel-eslint": "^10.0.2",
@@ -51,7 +58,9 @@
     "coveralls": "^3.0.7",
     "cpy-cli": "^2.0.0",
     "del-cli": "^3.0.0",
+    "hypercore-crypto": "^1.0.0",
     "jest": "^24.5.0",
+    "pump": "^3.0.0",
     "semistandard": "^14.2.0",
     "wait-for-expect": "^3.0.1"
   },
