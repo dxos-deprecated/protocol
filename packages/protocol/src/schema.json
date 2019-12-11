@@ -23,45 +23,6 @@
                   "id": 4
                 }
               }
-            },
-            "PeerChatMessage": {
-              "fields": {
-                "type": {
-                  "type": "string",
-                  "id": 1
-                },
-                "data": {
-                  "type": "bytes",
-                  "id": 2
-                }
-              }
-            },
-            "Presence": {
-              "fields": {
-                "from": {
-                  "type": "bytes",
-                  "id": 1
-                },
-                "connections": {
-                  "rule": "repeated",
-                  "type": "Connection",
-                  "id": 2
-                }
-              },
-              "nested": {
-                "Connection": {
-                  "fields": {
-                    "peerId": {
-                      "type": "bytes",
-                      "id": 1
-                    },
-                    "initiator": {
-                      "type": "bool",
-                      "id": 2
-                    }
-                  }
-                }
-              }
             }
           }
         }
