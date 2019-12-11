@@ -28,14 +28,12 @@ export class Replicator extends EventEmitter {
   constructor (middleware, options) {
     assert(middleware);
     assert(middleware.load);
-    assert(middleware.findFeed);
 
-    const { load, findFeed, incoming = () => {} } = middleware;
+    const { load, incoming = () => {} } = middleware;
 
     super();
 
     this._load = async (...args) => load(...args);
-    this._findFeed = async (...args) => findFeed(...args);
     this._incoming = async (...args) => incoming(...args);
 
     this._options = Object.assign({
@@ -129,10 +127,8 @@ export class Replicator extends EventEmitter {
     const peer = this._peers.get(protocol);
 
     try {
-      const feed = await this._findFeed(discoveryKey, peer);
-      if (feed) {
-        peer._replicate(feed);
-      }
+      const feeds = await this._incoming([{ discoveryKey }], peer);
+      feeds.map(feed => peer._replicate(feed));
     } catch (err) {
       console.warn('Find feed error', err);
     }

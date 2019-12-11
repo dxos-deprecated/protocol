@@ -32,11 +32,12 @@ const createNode = async (topic) => {
         await peer.share([feed]);
       });
     },
-    findFeed (dk) {
-      return feedStore.getOpenFeed(({ discoveryKey }) => discoveryKey.equals(dk));
-    },
     async incoming (feeds) {
-      return Promise.all(feeds.map(({ key }) => {
+      return Promise.all(feeds.map(({ key, discoveryKey }) => {
+        if (discoveryKey) {
+          return feedStore.getOpenFeed(d => d.discoveryKey.equals(discoveryKey));
+        }
+
         const feed = feedStore.getOpenFeed(d => d.key.equals(key));
 
         if (feed) {
