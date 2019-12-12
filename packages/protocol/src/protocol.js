@@ -72,7 +72,6 @@ export class Protocol extends EventEmitter {
   constructor (options = {}) {
     super();
 
-    // TODO(ashwin): Check Codec() only called when the option is null.
     const { discoveryToPublicKey = key => key, streamOptions } = options;
 
     this._discoveryToPublicKey = discoveryToPublicKey;
@@ -180,7 +179,6 @@ export class Protocol extends EventEmitter {
   init (discoveryKey) {
     assert(!this._init);
 
-    // TODO(ashwin): Set at end of function (we might crash).
     this._init = true;
 
     // See https://github.com/wirelineio/wireline-core/blob/master/docs/design/appendix.md#swarming--dat-protocol-handshake for details.
@@ -197,8 +195,6 @@ export class Protocol extends EventEmitter {
 
       try {
         for (const [name, extension] of this._extensionMap) {
-          // TODO(ashwin): Why is stream.destroyed checked inside the extension loop?
-          // TODO(ashwin): Also, consider logging/warn when existing due to some unexpected condition.
           if (this._stream.destroyed) {
             return;
           }

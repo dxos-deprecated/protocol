@@ -11,16 +11,64 @@
                   "id": 1
                 },
                 "error": {
-                  "type": "bytes",
+                  "type": "Error",
                   "id": 2
                 },
                 "data": {
-                  "type": "bytes",
+                  "type": "google.protobuf.Any",
                   "id": 3
                 },
                 "options": {
-                  "type": "bytes",
+                  "type": "Options",
                   "id": 4
+                }
+              }
+            },
+            "Options": {
+              "fields": {
+                "oneway": {
+                  "type": "bool",
+                  "id": 1
+                }
+              }
+            },
+            "Error": {
+              "fields": {
+                "code": {
+                  "type": "string",
+                  "id": 1
+                },
+                "message": {
+                  "type": "string",
+                  "id": 2
+                }
+              }
+            },
+            "Buffer": {
+              "fields": {
+                "data": {
+                  "type": "bytes",
+                  "id": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "google": {
+      "nested": {
+        "protobuf": {
+          "nested": {
+            "Any": {
+              "fields": {
+                "type_url": {
+                  "type": "string",
+                  "id": 1
+                },
+                "value": {
+                  "type": "bytes",
+                  "id": 2
                 }
               }
             }

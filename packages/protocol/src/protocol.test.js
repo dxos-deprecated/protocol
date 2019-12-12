@@ -17,7 +17,7 @@ jest.setTimeout(10 * 1000);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 test('protocol', async () => {
-  const extension = 'keys';
+  const bufferExtension = 'buffer';
   const timeout = 1000;
 
   const waitOneWayMessage = {};
@@ -29,47 +29,24 @@ test('protocol', async () => {
 
   const protocol1 = new Protocol()
     .setUserData({ user: 'user1' })
-    .setExtension(new Extension(extension, { timeout }))
+    .setExtension(new Extension(bufferExtension, { timeout }))
     .init(publicKey);
 
   const protocol2 = new Protocol()
     .setUserData({ user: 'user2' })
-    .setExtension(new Extension(extension, { timeout })
-      .setMessageHandler(async (protocol, context, { type, topics }) => {
-        // Check credentials.
-        if (context.user !== 'user1') {
-          throw new Error('Not authorized');
+    .setExtension(new Extension(bufferExtension, { timeout })
+      .setMessageHandler(async (protocol, context, message, options) => {
+        const { data } = message;
+
+        if (options.oneway) {
+          waitOneWayMessage.resolve(data);
+          return;
         }
 
-        const feedStore = {
-          foo: ['f1', 'f2', 'f3'],
-          bar: ['f3', 'f4']
-        };
-
-        switch (type) {
-          case 'list': {
-            return {
-              topics: Object.keys(feedStore)
-            };
-          }
-
+        switch (data.toString()) {
           // Async response.
-          case 'request': {
-            const results = topics.map((topic) => {
-              const keys = feedStore[topic] || [];
-              return { topic, keys };
-            });
-
-            return new Promise((resolve) => {
-              setTimeout(() => {
-                resolve({ topics: results });
-              }, 0);
-            });
-          }
-
-          case 'oneway': {
-            waitOneWayMessage.resolve({ topics });
-            break;
+          case 'ping': {
+            return Buffer.from('pong');
           }
 
           // Timeout.
@@ -80,64 +57,46 @@ test('protocol', async () => {
 
           // Error.
           default: {
-            throw new Error(`Invalid type: ${type}`);
+            throw new Error('Invalid data.');
           }
         }
       }))
     .init(publicKey);
 
   protocol1.on('handshake', async (protocol) => {
-    const keys = protocol.getExtension(extension);
+    const bufferMessages = protocol.getExtension(bufferExtension);
 
-    keys.on('error', (err) => {
+    bufferMessages.on('error', (err) => {
       log('Error: %o', err);
     });
 
     {
-      const { context, response: { topics } } = await keys.send({ type: 'list' });
+      const { context, response: { data } } = await bufferMessages.send(Buffer.from('ping'));
       expect(context.user).toBe('user2');
-      expect(topics).toHaveLength(2);
-      log('%o', topics);
+      expect(data).toEqual(Buffer.from('pong'));
     }
 
     {
-      const { context, response: { topics } } = await keys.send({ type: 'request', topics: ['foo', 'bar'] });
-      expect(context.user).toBe('user2');
-      expect(topics.find(r => r.topic === 'foo').keys).toHaveLength(3);
-      expect(topics.find(r => r.topic === 'bar').keys).toHaveLength(2);
-      log('%o', topics);
-    }
-
-    {
-      const { context, response: { topics } } = await keys.send({ type: 'request', topics: ['zoo'] });
-      expect(context.user).toBe('user2');
-      expect(topics.find(r => r.topic === 'zoo').keys).toHaveLength(0);
-      log('%o', topics);
-    }
-
-    {
-      const result = await keys.send({ type: 'oneway', topics: ['zoo'] }, { oneway: true });
+      const result = await bufferMessages.send(Buffer.from('oneway'), { oneway: true });
       expect(result).toBeUndefined();
-      const { topics } = await waitOneWayMessage.promise;
-      expect(topics[0]).toBe('zoo');
-      log('%o', topics);
+      const data = await waitOneWayMessage.promise;
+      expect(data).toEqual(Buffer.from('oneway'));
     }
 
     try {
-      await keys.send({ type: 'xxx' });
-    } catch (ex) {
-      expect(ex.code).toBe(500); // exception.
-      log('%o', ex);
+      await bufferMessages.send(Buffer.from('crash'));
+    } catch (err) {
+      expect(err.code).toBe('ERR_SYSTEM');
+      expect(err.message).toBe('Invalid data.');
     }
 
     try {
-      await keys.send({ type: 'timeout' });
-    } catch (ex) {
-      expect(ex.code).toBe(408); // timeout.
-      log('%o', ex);
+      await bufferMessages.send(Buffer.from('timeout'));
+    } catch (err) {
+      expect(err.code).toBe('ERR_REQUEST_TIMEOUT'); // timeout.
     }
 
-    log('%o', keys.stats);
+    log('%o', bufferMessages.stats);
     protocol1.stream.destroy();
   });
 

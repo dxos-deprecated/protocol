@@ -40,10 +40,11 @@ export class Peer extends EventEmitter {
       return;
     }
 
-    const message = this._codec.encode({
+    const message = {
+      __type_url: 'dxos.protocol.replicator.Container',
       type: 'share-feeds',
       data: feeds.map(({ key, metadata }) => ({ __type_url: 'dxos.protocol.replicator.Feed', key, metadata }))
-    });
+    };
 
     await this._extension.send(message, { oneway: true });
   }
@@ -54,7 +55,7 @@ export class Peer extends EventEmitter {
    * @returns {boolean} - true if `feed.replicate` was called.
    * @private
    */
-  _replicate (feed) {
+  replicate (feed) {
     const { stream } = this._protocol;
 
     if (stream.destroyed) {

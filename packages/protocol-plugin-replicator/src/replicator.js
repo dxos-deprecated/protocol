@@ -6,8 +6,7 @@ import { EventEmitter } from 'events';
 import assert from 'assert';
 import debug from 'debug';
 
-import { Codec } from '@dxos/codec-protobuf';
-import { Extension } from '@wirelineio/protocol';
+import { Extension } from '@dxos/protocol';
 
 import { Peer } from './peer';
 import schema from './schema.json';
@@ -40,10 +39,6 @@ export class Replicator extends EventEmitter {
       timeout: 1000
     }, options);
 
-    this._codec = new Codec('dxos.protocol.replicator.Container')
-      .addJson(JSON.parse(schema))
-      .build();
-
     this._peers = new Map();
   }
 
@@ -58,7 +53,10 @@ export class Replicator extends EventEmitter {
    * @return {Extension}
    */
   createExtension () {
-    return new Extension(Replicator.extension, { binary: true, timeout: this._options.timeout })
+    return new Extension(Replicator.extension, {
+      schema: JSON.parse(schema),
+      timeout: this._options.timeout
+    })
       .on('error', err => this.emit(err))
       .setHandshakeHandler(this._handshakeHandler.bind(this))
       .setMessageHandler(this._messageHandler.bind(this))
@@ -75,7 +73,7 @@ export class Replicator extends EventEmitter {
   async _handshakeHandler (protocol) {
     const extension = protocol.getExtension(Replicator.extension);
 
-    const peer = new Peer(protocol, extension, this._codec);
+    const peer = new Peer(protocol, extension);
 
     this._peers.set(protocol, peer);
 
@@ -94,7 +92,7 @@ export class Replicator extends EventEmitter {
    * @param {Object} message
    */
   async _messageHandler (protocol, context, message) {
-    const { type, data } = this._codec.decode(message);
+    const { type, data } = message;
 
     try {
       switch (type) {
@@ -116,8 +114,8 @@ export class Replicator extends EventEmitter {
     const peer = this._peers.get(protocol);
 
     try {
-      const feeds = await this._incoming(data, peer) || [];
-      feeds.map(feed => peer._replicate(feed));
+      const feeds = await this._incoming(peer, data) || [];
+      feeds.map(feed => peer.replicate(feed));
     } catch (err) {
       console.warn('Incoming feeds error', err);
     }
@@ -127,8 +125,8 @@ export class Replicator extends EventEmitter {
     const peer = this._peers.get(protocol);
 
     try {
-      const feeds = await this._incoming([{ discoveryKey }], peer);
-      feeds.map(feed => peer._replicate(feed));
+      const feeds = await this._incoming(peer, [{ discoveryKey }]) || [];
+      feeds.map(feed => peer.replicate(feed));
     } catch (err) {
       console.warn('Find feed error', err);
     }

@@ -5,12 +5,13 @@
 import assert from 'assert';
 import { EventEmitter } from 'events';
 import crypto from 'crypto';
-
 import debug from 'debug';
 
+import { Codec } from '@dxos/codec-protobuf';
+
 import { keyToHuman } from './utils';
-import { Codec } from './codec';
 import { ProtocolError } from './protocol';
+import schema from './schema.json';
 
 const log = debug('extension');
 
@@ -65,18 +66,25 @@ export class Extension extends EventEmitter {
    * @param {string} name
    * @param {Object} options
    * @param {Number} options.timeout
-   * @param {Codec} options.codec
    */
   constructor (name, options = {}) {
     super();
-    assert(typeof name === 'string' && name.length > 0, 'Name is required.');
+    assert(typeof name === 'string' && name.length > 0, 'name is required.');
 
     this._name = name;
 
     this._options = Object.assign({
-      timeout: 2000,
-      codec: new Codec({ binary: options.binary })
+      timeout: 2000
     }, options);
+
+    this._codec = new Codec('dxos.protocol.Request')
+      .addJson(JSON.parse(schema));
+
+    if (this._options.schema) {
+      this._codec.addJson(this._options.schema);
+    }
+
+    this._codec.build();
   }
 
   get name () {
@@ -172,7 +180,7 @@ export class Extension extends EventEmitter {
    * @param {Buffer} message
    */
   async onMessage (context, message) {
-    const { id, error, data: requestData, options = {} } = this._options.codec.decode(message);
+    const { id, error, data: requestData, options = {} } = this._codec.decode(message);
 
     // Check for a pending request.
     const idHex = id.toString('hex');
@@ -186,14 +194,15 @@ export class Extension extends EventEmitter {
 
     if (!this._messageHandler) {
       console.warn('No message handler.');
-      this.emit('error', new ProtocolError(500, 'No message handler'));
+      this.emit('error', new ProtocolError('ERR_SYSTEM', 'No message handler'));
       return;
     }
 
     try {
       // Process the message.
       log(`received ${keyToHuman(this._protocol.stream.id, 'node')}: ${keyToHuman(id, 'msg')}`);
-      const responseData = await this._messageHandler(this._protocol, context, requestData);
+      let responseData = await this._messageHandler(this._protocol, context, requestData, options);
+      responseData = Buffer.isBuffer(responseData) ? { __type_url: 'Buffer', data: responseData } : responseData;
 
       if (options.oneway) {
         return;
@@ -202,16 +211,16 @@ export class Extension extends EventEmitter {
       // Send the response.
       const response = { id, data: responseData };
       log(`responding ${keyToHuman(this._protocol.stream.id, 'node')}: ${keyToHuman(id, 'msg')}`);
-      this._protocol.feed.extension(this._name, this._options.codec.encode(response));
-    } catch (ex) {
+      this._protocol.feed.extension(this._name, this._codec.encode(response));
+    } catch (err) {
       if (options.oneway) {
         return;
       }
 
       // System error.
-      const code = (ex instanceof ProtocolError) ? ex.code : 500;
-      const response = { id, error: { code, error: ex.message } };
-      this._protocol.feed.extension(this._name, this._options.codec.encode(response));
+      const code = (err instanceof ProtocolError) ? err.code : 'ERR_SYSTEM';
+      const response = { id, error: { code: code, message: err.message } };
+      this._protocol.feed.extension(this._name, this._codec.encode(response));
     }
   }
 
@@ -229,24 +238,25 @@ export class Extension extends EventEmitter {
 
   /**
    * Sends a message to peer.
-   * @param {Object} message
+   * @param {(Object|Buffer)} message
    * @param {Object} options
    * @param {Boolean} options.oneway
    * @returns {Promise<Object>} Response from peer.
    */
   async send (message, options = {}) {
+    assert(typeof message === 'object' || Buffer.isBuffer(message));
+
     const { oneway = false } = options;
 
     const request = {
       id: crypto.randomBytes(32),
-      data: message,
+      data: Buffer.isBuffer(message) ? { __type_url: 'dxos.protocol.Buffer', data: message } : message,
       options: {
         oneway
       }
     };
 
     // Send the message.
-    // TODO(burdon): Is it possible to have a stream event, where retrying would be appropriate?
     this._send(request);
 
     if (oneway) {
@@ -269,8 +279,7 @@ export class Extension extends EventEmitter {
       }
 
       if (promise.expired) {
-        console.warn('Timed out.');
-        this.emit('error', new ProtocolError(408));
+        this.emit('error', new ProtocolError('ERR_REQUEST_TIMEOUT'));
         return;
       }
 
@@ -287,7 +296,7 @@ export class Extension extends EventEmitter {
           if (!promise.done) {
             promise.expired = true;
             this._stats.error++;
-            reject({ code: 408 }); // eslint-disable-line
+            reject({ code: 'ERR_REQUEST_TIMEOUT' }); // eslint-disable-line
           }
         }, this._options.timeout);
       }
@@ -302,7 +311,7 @@ export class Extension extends EventEmitter {
    */
   _send (request) {
     log(`sending a message ${keyToHuman(this._protocol.stream.id, 'node')}: ${keyToHuman(request.id, 'msg')}`);
-    this._protocol.feed.extension(this._name, this._options.codec.encode(request));
+    this._protocol.feed.extension(this._name, this._codec.encode(request));
 
     this._stats.send++;
     this.emit('send', this._stats);

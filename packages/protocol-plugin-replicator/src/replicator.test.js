@@ -13,7 +13,7 @@ import eos from 'end-of-stream';
 
 import { FeedStore } from '@dxos/feed-store';
 
-import { Protocol } from '@wirelineio/protocol';
+import { Protocol } from '@dxos/protocol';
 
 import { Replicator } from '.';
 
@@ -32,7 +32,7 @@ const createNode = async (topic) => {
         await peer.share([feed]);
       });
     },
-    async incoming (feeds) {
+    async incoming (peer, feeds) {
       return Promise.all(feeds.map(({ key, discoveryKey }) => {
         if (discoveryKey) {
           return feedStore.getOpenFeed(d => d.discoveryKey.equals(discoveryKey));
@@ -135,15 +135,15 @@ describe('test data replication in a balanced network graph of 15 peers', () => 
   });
 
   test('message synchronization', async () => {
-    expect.assertions(15);
-
     const messages = [];
     const wait = [];
     graph.forEachNode((node) => {
       const msg = `${node.id}:foo`;
+      messages.push(msg);
       wait.push(node.data.append(msg));
     });
     messages.sort();
+
     await Promise.all(wait);
 
     await waitForExpect(async () => {
@@ -152,8 +152,8 @@ describe('test data replication in a balanced network graph of 15 peers', () => 
         results.push(node.data.getMessages());
       });
       for await (const nodeMessages of results) {
-        expect(nodeMessages).toEqual(nodeMessages);
+        expect(nodeMessages).toEqual(messages);
       }
-    }, 4500, 1000);
+    }, 15 * 1000, 5 * 1000);
   });
 });
