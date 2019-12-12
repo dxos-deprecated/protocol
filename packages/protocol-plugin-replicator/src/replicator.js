@@ -29,13 +29,13 @@ export class Replicator extends EventEmitter {
    */
   constructor (middleware, options) {
     assert(middleware);
-    assert(middleware.begin);
+    assert(middleware.load);
 
-    const { begin, subscribe = defaultSubscribe, incoming = defaultIncoming } = middleware;
+    const { load, subscribe = defaultSubscribe, incoming = defaultIncoming } = middleware;
 
     super();
 
-    this._begin = async (...args) => begin(...args);
+    this._load = async (...args) => load(...args);
     this._subscribe = (...args) => subscribe(...args);
     this._incoming = async (...args) => incoming(...args);
 
@@ -85,7 +85,7 @@ export class Replicator extends EventEmitter {
       const unsubscribe = this._subscribe(feed => peer.shareAndReplicate([feed]));
       peer.on('close', unsubscribe);
 
-      const feeds = await this._begin() || [];
+      const feeds = await this._load() || [];
       peer.shareAndReplicate(feeds);
     } catch (err) {
       console.warn('Load error: ', err);

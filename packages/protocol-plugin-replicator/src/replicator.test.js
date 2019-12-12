@@ -34,7 +34,7 @@ const createNode = async (topic) => {
         feedStore.removeListener('feed', next);
       };
     },
-    async begin () {
+    async load () {
       return [feed];
     },
     async incoming (feeds) {
