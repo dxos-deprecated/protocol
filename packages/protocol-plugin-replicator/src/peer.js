@@ -50,12 +50,20 @@ export class Peer extends EventEmitter {
   }
 
   /**
+   * Replicate multiple feeds.
+   * @param {Hypercore} feed
+   */
+  replicate (feeds = []) {
+    feeds.forEach(feed => this._replicate(feed));
+  }
+
+  /**
    * Replicate a feed.
    * @param {Hypercore} feed
    * @returns {boolean} - true if `feed.replicate` was called.
    * @private
    */
-  replicate (feed) {
+  _replicate (feed) {
     const { stream } = this._protocol;
 
     if (stream.destroyed) {

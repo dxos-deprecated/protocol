@@ -3,5 +3,5 @@ node_js:
   - "node"
   - '12'
   - '10'
-before_script: yarn lerna bootstrap --ci
+before_script: yarn lerna bootstrap --ci && yarn build
 # after_success: yarn coveralls

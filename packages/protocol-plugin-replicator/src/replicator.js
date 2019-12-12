@@ -78,7 +78,8 @@ export class Replicator extends EventEmitter {
     this._peers.set(protocol, peer);
 
     try {
-      await this._load(peer);
+      const feeds = await this._load(peer) || [];
+      peer.replicate(feeds);
     } catch (err) {
       console.warn('Load error: ', err);
     }
@@ -115,7 +116,7 @@ export class Replicator extends EventEmitter {
 
     try {
       const feeds = await this._incoming(peer, data) || [];
-      feeds.map(feed => peer.replicate(feed));
+      peer.replicate(feeds);
     } catch (err) {
       console.warn('Incoming feeds error', err);
     }
@@ -126,7 +127,7 @@ export class Replicator extends EventEmitter {
 
     try {
       const feeds = await this._incoming(peer, [{ discoveryKey }]) || [];
-      feeds.map(feed => peer.replicate(feed));
+      peer.replicate(feeds);
     } catch (err) {
       console.warn('Find feed error', err);
     }
