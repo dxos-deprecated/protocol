@@ -82,11 +82,23 @@ export class Replicator extends EventEmitter {
     this._peers.set(protocol, peer);
 
     try {
-      const unsubscribe = this._subscribe(feed => peer.shareAndReplicate([feed]));
+      const unsubscribe = this._subscribe((feed, metadata) => {
+        if (metadata) {
+          peer.share([{
+            key: feed.key,
+            metadata: Buffer.isBuffer(metadata) ? metadata : undefined
+          }]).finally(() => {
+            peer.replicate([feed]);
+          });
+          return;
+        }
+
+        peer.replicate([feed]);
+      });
       peer.on('close', unsubscribe);
 
-      const feeds = await this._load() || [];
-      peer.shareAndReplicate(feeds);
+      const feeds = await this._load((...args) => peer.share(...args)) || [];
+      peer.replicate(feeds);
     } catch (err) {
       console.warn('Load error: ', err);
     }

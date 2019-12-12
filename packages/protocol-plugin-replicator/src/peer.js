@@ -28,13 +28,25 @@ export class Peer extends EventEmitter {
   }
 
   /**
-   * Share and replicate multiple feeds.
-   * @param {Hypercore[]} feed
+   * Share feeds to the remote peer.
+   *
+   * @param {Object[]} [feeds] List of feeds of type: [{ key: Buffer, metadata: Buffer }]
+   * @returns {Promise}
    */
-  async shareAndReplicate (feeds = []) {
-    feeds = feeds.filter(Boolean);
-    await this._share(feeds);
-    this.replicate(feeds);
+  async share (feeds = []) {
+    log('share', feeds);
+
+    if (feeds.length === 0) {
+      return;
+    }
+
+    const message = {
+      __type_url: 'dxos.protocol.replicator.Container',
+      type: 'share-feeds',
+      data: feeds.map(({ key, metadata }) => ({ __type_url: 'dxos.protocol.replicator.Feed', key, metadata }))
+    };
+
+    await this._extension.send(message, { oneway: true });
   }
 
   /**
@@ -80,28 +92,6 @@ export class Peer extends EventEmitter {
     log('stream replicated', feed.key.toString('hex'));
 
     return true;
-  }
-
-  /**
-   * Share feeds to the remote peer.
-   *
-   * @param {Object[]} [feeds] List of feeds of type: [{ key: Buffer, metadata: Buffer }]
-   * @returns {Promise}
-   */
-  async _share (feeds = []) {
-    log('share', feeds);
-
-    if (feeds.length === 0) {
-      return;
-    }
-
-    const message = {
-      __type_url: 'dxos.protocol.replicator.Container',
-      type: 'share-feeds',
-      data: feeds.map(({ key, metadata }) => ({ __type_url: 'dxos.protocol.replicator.Feed', key, metadata }))
-    };
-
-    await this._extension.send(message, { oneway: true });
   }
 
   /**
