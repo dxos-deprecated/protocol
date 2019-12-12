@@ -718,6 +718,15 @@
     debug "^4.1.1"
     source-map-support "^0.5.12"
 
+"@dxos/broadcast@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@dxos/broadcast/-/broadcast-0.0.2.tgz#2071f9742ce52cac14ff26859d92a53a1bf60e37"
+  integrity sha512-eVPQSlBwhdBDQRt5DuI0ZkLmcoTKF3en1KfTgtxIPZghDrH9HtBUzsfU+pYndhsEHfZtkSaUer7xmuuHGXKegw==
+  dependencies:
+    "@dxos/codec-protobuf" "^1.1.0-beta.2"
+    debug "^4.1.1"
+    source-map-support "^0.5.12"
+
 "@dxos/codec-protobuf@1.1.0-beta.2", "@dxos/codec-protobuf@^1.1.0-beta.0", "@dxos/codec-protobuf@^1.1.0-beta.2":
   version "1.1.0-beta.2"
   resolved "https://registry.yarnpkg.com/@dxos/codec-protobuf/-/codec-protobuf-1.1.0-beta.2.tgz#b61700c53aa4412ff0f4e524bf9e9e542d46796d"
@@ -6190,6 +6199,11 @@ ngraph.events@0.0.3:
   resolved "https://registry.yarnpkg.com/ngraph.events/-/ngraph.events-0.0.3.tgz#38f55316f3d207ad631ff94f6622ca8f2c0e87d0"
   integrity sha1-OPVTFvPSB61jH/lPZiLKjywOh9A=
 
+ngraph.events@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/ngraph.events/-/ngraph.events-1.0.0.tgz#260b638f1d8b1394a10ce1dda9e5d9d9c85001b1"
+  integrity sha512-Z7wyywdw8IKjOW0bDiOG4FUqX5fwqW7SDMO1huemDXho7Qy1b02RoBkPS43KLIZU2wrW2orju99k8wIr+xXvVA==
+
 ngraph.generators@^18.0.1:
   version "18.0.1"
   resolved "https://registry.yarnpkg.com/ngraph.generators/-/ngraph.generators-18.0.1.tgz#b92be07457832f427da504414b2bb059c39cc27b"
@@ -6204,6 +6218,18 @@ ngraph.graph@18.0.0:
   integrity sha512-HH39PulrZrFIcO6Qw4Ts3aYqPauAV/6p2lbbtPiFZoUDAASLtfnfg4wtXohy0ZE9Ik51wUgWaZ+FfyKk/SRlzQ==
   dependencies:
     ngraph.events "0.0.3"
+
+ngraph.graph@^19.0.1:
+  version "19.0.1"
+  resolved "https://registry.yarnpkg.com/ngraph.graph/-/ngraph.graph-19.0.1.tgz#aa1844971f39207878963a1c4642898c99dc2681"
+  integrity sha512-4ia8RRI1BlLOp27mlolevleQLp1omhWuoUO3p/m6n5ROO6eNkPF6wSft6ZOYPjeHTAVAD40pUZffVA6WypdhUw==
+  dependencies:
+    ngraph.events "1.0.0"
+
+ngraph.path@^1.3.1:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/ngraph.path/-/ngraph.path-1.3.1.tgz#bc05b3ad7a9719eedf6679804ca0e2d913239978"
+  integrity sha512-A78BGNCDo/uMApMx9QRqtSOheV4wMrgxitOVR2+0ZdbTfgzd70IN2WjuSXUFbNh7T2o0fPebPB2AFx39IvP8Gw==
 
 ngraph.random@0.1.0:
   version "0.1.0"
@@ -7127,6 +7153,11 @@ qs@~6.5.2:
   version "6.5.2"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.5.2.tgz#cb3ae806e8740444584ef154ce8ee98d403f3e36"
   integrity sha512-N5ZAX4/LxJmF+7wN74pUD6qAh9/wnvdQcjq9TZjevvXzSUo7bfmw91saqMjzGS2xq91/odN2dW/WOl7qQHNDGA==
+
+queue-microtask@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/queue-microtask/-/queue-microtask-1.1.2.tgz#139bf8186db0c545017ec66c2664ac646d5c571e"
+  integrity sha512-F9wwNePtXrzZenAB3ax0Y8TSKGvuB7Qw16J30hspEUTbfUM+H827XyN3rlpwhVmtm5wuZtbKIHjOnwDn7MUxWQ==
 
 quick-lru@^1.0.0:
   version "1.1.0"

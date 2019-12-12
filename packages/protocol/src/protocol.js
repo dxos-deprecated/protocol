@@ -8,6 +8,7 @@ import assert from 'assert';
 import debug from 'debug';
 import protocol from 'hypercore-protocol';
 import eos from 'end-of-stream';
+import bufferJson from 'buffer-json-encoding';
 
 import { keyToHuman } from './utils';
 
@@ -118,7 +119,7 @@ export class Protocol extends EventEmitter {
    * @returns {Protocol}
    */
   setUserData (data) {
-    this._stream.userData = Buffer.from(JSON.stringify(data));
+    this._stream.userData = bufferJson.encode(data);
 
     return this;
   }
@@ -279,7 +280,7 @@ export class Protocol extends EventEmitter {
    */
   getContext () {
     try {
-      return JSON.parse(this._stream.remoteUserData);
+      return bufferJson.decode(this._stream.remoteUserData);
     } catch (err) {
       return {};
     }

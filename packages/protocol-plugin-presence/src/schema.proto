@@ -1,0 +1,17 @@
+//
+// Copyright 2019 DxOS.
+//
+
+syntax = "proto3";
+
+package dxos.protocol.presence;
+
+message Alive {
+  message Connection {
+    bytes peerId = 1;
+    bool initiator = 2;
+  }
+
+  bytes from = 1;
+  repeated Connection connections = 2;
+}
