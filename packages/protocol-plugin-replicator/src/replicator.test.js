@@ -27,20 +27,17 @@ const createNode = async (topic) => {
 
   // Middleware for replicator
   const middleware = {
-    async load (peer) {
-      await peer.share([feed]);
-
-      const onFeed = async (feed) => {
-        await peer.share([feed]);
-      };
-      feedStore.on('feed', onFeed);
-
-      peer.on('close', () => {
+    subscribe (next) {
+      feedStore.on('feed', next);
+      return () => {
         closed = true;
-        feedStore.removeListener('feed', onFeed);
-      });
+        feedStore.removeListener('feed', next);
+      };
     },
-    async incoming (peer, feeds) {
+    async begin () {
+      return [feed];
+    },
+    async incoming (feeds) {
       return Promise.all(feeds.map(({ key, discoveryKey }) => {
         if (discoveryKey) {
           return feedStore.getOpenFeed(d => d.discoveryKey.equals(discoveryKey));

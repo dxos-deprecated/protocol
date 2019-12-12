@@ -13,6 +13,9 @@ import schema from './schema.json';
 
 const log = debug('dxos.replicator');
 
+const defaultIncoming = () => {};
+const defaultSubscribe = () => () => {};
+
 /**
  * Manages key exchange and feed replication.
  */
@@ -26,13 +29,14 @@ export class Replicator extends EventEmitter {
    */
   constructor (middleware, options) {
     assert(middleware);
-    assert(middleware.load);
+    assert(middleware.begin);
 
-    const { load, incoming = () => {} } = middleware;
+    const { begin, subscribe = defaultSubscribe, incoming = defaultIncoming } = middleware;
 
     super();
 
-    this._load = async (...args) => load(...args);
+    this._begin = async (...args) => begin(...args);
+    this._subscribe = (...args) => subscribe(...args);
     this._incoming = async (...args) => incoming(...args);
 
     this._options = Object.assign({
@@ -78,8 +82,11 @@ export class Replicator extends EventEmitter {
     this._peers.set(protocol, peer);
 
     try {
-      const feeds = await this._load(peer) || [];
-      peer.replicate(feeds);
+      const unsubscribe = this._subscribe(feed => peer.shareAndReplicate([feed]));
+      peer.on('close', unsubscribe);
+
+      const feeds = await this._begin() || [];
+      peer.shareAndReplicate(feeds);
     } catch (err) {
       console.warn('Load error: ', err);
     }
@@ -115,7 +122,7 @@ export class Replicator extends EventEmitter {
     const peer = this._peers.get(protocol);
 
     try {
-      const feeds = await this._incoming(peer, data) || [];
+      const feeds = await this._incoming(data) || [];
       peer.replicate(feeds);
     } catch (err) {
       console.warn('Incoming feeds error', err);
@@ -126,7 +133,7 @@ export class Replicator extends EventEmitter {
     const peer = this._peers.get(protocol);
 
     try {
-      const feeds = await this._incoming(peer, [{ discoveryKey }]) || [];
+      const feeds = await this._incoming([{ discoveryKey }]) || [];
       peer.replicate(feeds);
     } catch (err) {
       console.warn('Find feed error', err);
