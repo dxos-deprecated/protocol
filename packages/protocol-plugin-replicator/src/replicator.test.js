@@ -23,13 +23,21 @@ const createNode = async (topic) => {
   const feedStore = await FeedStore.create(ram, { feedOptions: { valueEncoding: 'utf8' } });
   const feed = await feedStore.openFeed('/feed', { metadata: { topic: topic.toString('hex') } });
   const append = pify(feed.append.bind(feed));
+  let closed = false;
 
   // Middleware for replicator
   const middleware = {
     async load (peer) {
       await peer.share([feed]);
-      feedStore.on('feed', async (feed) => {
+
+      const onFeed = async (feed) => {
         await peer.share([feed]);
+      };
+      feedStore.on('feed', onFeed);
+
+      peer.on('close', () => {
+        closed = true;
+        feedStore.removeListener('feed', onFeed);
       });
     },
     async incoming (peer, feeds) {
@@ -79,6 +87,9 @@ const createNode = async (topic) => {
           }
         });
       });
+    },
+    isClosed () {
+      return closed;
     }
   };
 };
@@ -89,8 +100,9 @@ const createPeers = async (topic, graph) => {
     peers.push(node);
   });
 
-  await Promise.all(peers.map(async (node) => {
+  return Promise.all(peers.map(async (node) => {
     node.data = await createNode(topic);
+    return node.data;
   }));
 };
 
@@ -101,27 +113,36 @@ const createConnections = (graph) => {
     }
   };
 
-  graph.forEachLink((link) => {
-    const fromNode = graph.getNode(link.fromId).data;
-    const toNode = graph.getNode(link.toId).data;
-    const r1 = fromNode.replicate(options);
-    const r2 = toNode.replicate(options);
-    link.data = pump(r1, r2, r1, (err) => {
-      if (err) {
-        console.error(err);
-      }
+  let ic = graph.getLinksCount();
+
+  return new Promise(resolve => {
+    const connections = [];
+
+    graph.forEachLink((link) => {
+      const fromNode = graph.getNode(link.fromId).data;
+      const toNode = graph.getNode(link.toId).data;
+      const r1 = fromNode.replicate(options);
+      const r2 = toNode.replicate(options);
+      link.data = pump(r1, r2, r1);
+      link.data.on('handshake', () => {
+        ic--;
+        connections.push(link.data);
+        if (ic === 0) {
+          resolve(connections);
+        }
+      });
     });
   });
 };
 
 describe('test data replication in a balanced network graph of 15 peers', () => {
   const topic = crypto.randomBytes(32);
-  let graph;
+  let graph, peers, connections;
 
   beforeAll(async () => {
     graph = generator.balancedBinTree(3);
-    await createPeers(topic, graph);
-    createConnections(graph);
+    peers = await createPeers(topic, graph);
+    connections = await createConnections(graph);
   });
 
   test('feed synchronization', async () => {
@@ -155,5 +176,18 @@ describe('test data replication in a balanced network graph of 15 peers', () => 
         expect(nodeMessages).toEqual(messages);
       }
     }, 15 * 1000, 5 * 1000);
+
+    connections.forEach(c => c.destroy());
+
+    await waitForExpect(() => {
+      let closed = true;
+      for (const peer of peers) {
+        closed = closed && peer.isClosed();
+        if (!closed) {
+          break;
+        }
+      }
+      expect(closed).toBe(true);
+    });
   });
 });

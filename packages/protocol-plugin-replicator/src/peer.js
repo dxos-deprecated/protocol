@@ -94,7 +94,12 @@ export class Peer extends EventEmitter {
    * Close the peer.
    */
   _close () {
-    this._protocol.destroy();
+    const { stream } = this._protocol;
+
+    if (!stream.destroyed) {
+      stream.destroy();
+    }
+
     this.emit('close');
   }
 }
