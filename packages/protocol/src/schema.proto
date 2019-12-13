@@ -8,11 +8,13 @@ package dxos.protocol;
 
 import "google/protobuf/any.proto";
 
-message Request {
+message Message {
   bytes id = 1;
-  Error error = 2;
-  google.protobuf.Any data = 3;
-  Options options = 4;
+  Options options = 2;
+  oneof payload {
+    google.protobuf.Any data = 3;
+    Error error = 4;
+  }
 }
 
 message Options {

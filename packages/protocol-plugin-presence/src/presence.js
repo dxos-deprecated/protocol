@@ -84,7 +84,7 @@ export class Presence extends EventEmitter {
   async ping () {
     try {
       const message = {
-        from: this._peerId,
+        peerId: this._peerId,
         connections: Array.from(this._neighbors.values()).map((peer) => {
           const { peerId } = peer.getContext();
           return { peerId };
@@ -261,7 +261,7 @@ export class Presence extends EventEmitter {
     });
   }
 
-  _updateNetwork ({ from, connections = [] }) {
+  _updateNetwork ({ peerId: from, connections = [] }) {
     const fromHex = from.toString('hex');
 
     const lastUpdate = Date.now();

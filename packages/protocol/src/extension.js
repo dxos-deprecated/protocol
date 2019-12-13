@@ -77,7 +77,7 @@ export class Extension extends EventEmitter {
       timeout: 2000
     }, options);
 
-    this._codec = new Codec('dxos.protocol.Request')
+    this._codec = new Codec('dxos.protocol.Message')
       .addJson(JSON.parse(schema));
 
     if (this._options.schema) {

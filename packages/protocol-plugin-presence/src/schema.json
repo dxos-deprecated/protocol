@@ -8,7 +8,7 @@
               "nested": {
                 "Alive": {
                   "fields": {
-                    "from": {
+                    "peerId": {
                       "type": "bytes",
                       "id": 1
                     },

@@ -12,6 +12,6 @@ message Alive {
     bool initiator = 2;
   }
 
-  bytes from = 1;
+  bytes peerId = 1;
   repeated Connection connections = 2;
 }
