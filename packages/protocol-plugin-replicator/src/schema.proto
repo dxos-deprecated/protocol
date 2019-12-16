@@ -1,0 +1,19 @@
+//
+// Copyright 2019 DxOS.
+//
+
+syntax = "proto3";
+
+package dxos.protocol.replicator;
+
+import "google/protobuf/any.proto";
+
+message Container {
+  string type = 1;
+  repeated google.protobuf.Any data = 2;
+}
+
+message Feed {
+  bytes key = 1;
+  bytes metadata = 2;
+}

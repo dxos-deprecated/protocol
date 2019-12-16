@@ -1,15 +1,51 @@
 {
   "name": "protocol",
+  "version": "0.0.1",
   "private": true,
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "description": "Protocol monorepo.",
+  "homepage": "https://github.com/dxos/protocol#readme",
+  "bugs": {
+    "url": "https://github.com/dxos/protocol/issues"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dxos/protocol.git"
+  },
+  "license": "GPL-3.0",
   "workspaces": {
     "packages": [
       "packages/*"
     ]
   },
-  "dependencies": {
-    "lerna": "^3.19.0"
+  "scripts": {
+    "build": "lerna run build",
+    "clean": "lerna run clean",
+    "lint": "lerna run lint",
+    "lint:fix": "lerna run lint -- --fix",
+    "test": "lerna run test",
+    "posttest": "npm run lint"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": "semistandard"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.2",
+    "husky": "^3.1.0",
+    "lerna": "^3.19.0",
+    "lint-staged": "^9.5.0",
+    "semistandard": "^14.2.0"
+  },
+  "semistandard": {
+    "parser": "babel-eslint",
+    "env": [
+      "jest",
+      "node",
+      "browser"
+    ]
   }
 }

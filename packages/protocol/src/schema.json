@@ -1,0 +1,88 @@
+{
+  "nested": {
+    "dxos": {
+      "nested": {
+        "protocol": {
+          "nested": {
+            "Message": {
+              "oneofs": {
+                "payload": {
+                  "oneof": [
+                    "data",
+                    "error"
+                  ]
+                }
+              },
+              "fields": {
+                "id": {
+                  "type": "bytes",
+                  "id": 1
+                },
+                "options": {
+                  "type": "Options",
+                  "id": 2
+                },
+                "data": {
+                  "type": "google.protobuf.Any",
+                  "id": 3
+                },
+                "error": {
+                  "type": "Error",
+                  "id": 4
+                }
+              }
+            },
+            "Options": {
+              "fields": {
+                "oneway": {
+                  "type": "bool",
+                  "id": 1
+                }
+              }
+            },
+            "Error": {
+              "fields": {
+                "code": {
+                  "type": "string",
+                  "id": 1
+                },
+                "message": {
+                  "type": "string",
+                  "id": 2
+                }
+              }
+            },
+            "Buffer": {
+              "fields": {
+                "data": {
+                  "type": "bytes",
+                  "id": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "google": {
+      "nested": {
+        "protobuf": {
+          "nested": {
+            "Any": {
+              "fields": {
+                "type_url": {
+                  "type": "string",
+                  "id": 1
+                },
+                "value": {
+                  "type": "bytes",
+                  "id": 2
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

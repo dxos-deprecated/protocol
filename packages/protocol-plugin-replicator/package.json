@@ -1,0 +1,78 @@
+{
+  "name": "@dxos/protocol-plugin-replicator",
+  "version": "0.0.1",
+  "description": "Protocol plugin replicator.",
+  "homepage": "https://github.com/dxos/protocol/tree/master/packages/protocol-plugin-replicator#readme",
+  "bugs": {
+    "url": "https://github.com/dxos/protocol/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dxos/protocol.git"
+  },
+  "license": "GPL-3.0",
+  "files": [
+    "dist",
+    "index.js"
+  ],
+  "main": "index.js",
+  "browser": "dist/index.js",
+  "scripts": {
+    "build": "npm run clean && npm run build:protobuf && npm run build:babel",
+    "build:babel": "babel ./src --out-dir ./dist --ignore \"**/*.test.js\" --source-maps",
+    "build:protobuf": "pbjs -t json src/schema.proto -o src/schema.json && cpy src/schema.json dist",
+    "clean": "del-cli dist",
+    "coverage": "npm test -- --coverage",
+    "coveralls": "npm run coverage && cat ./coverage/lcov.info | coveralls",
+    "lint": "semistandard 'src/**/*.js'",
+    "prepublishOnly": "npm run build && npm run test",
+    "test": "jest --verbose --passWithNoTests src",
+    "posttest": "npm run lint"
+  },
+  "browserslist": [
+    "> 5%"
+  ],
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "dependencies": {
+    "@dxos/codec-protobuf": "1.1.0-beta.2",
+    "@dxos/protocol": "^0.0.1",
+    "debug": "^4.1.1",
+    "source-map-support": "^0.5.12"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.7.0",
+    "@babel/core": "^7.4.5",
+    "@babel/plugin-proposal-class-properties": "^7.7.4",
+    "@babel/plugin-proposal-export-default-from": "^7.5.2",
+    "@babel/preset-env": "^7.4.5",
+    "@dxos/feed-store": "1.2.0-beta.2",
+    "babel-eslint": "^10.0.2",
+    "babel-jest": "^24.8.0",
+    "babel-plugin-add-module-exports": "^1.0.2",
+    "babel-plugin-inline-import": "^3.0.0",
+    "coveralls": "^3.0.7",
+    "cpy-cli": "^2.0.0",
+    "del-cli": "^3.0.0",
+    "end-of-stream": "^1.4.4",
+    "jest": "^24.5.0",
+    "ngraph.generators": "^18.0.1",
+    "pify": "^4.0.1",
+    "pump": "^3.0.0",
+    "random-access-memory": "^3.1.1",
+    "semistandard": "^14.2.0",
+    "wait-for-expect": "^3.0.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "semistandard": {
+    "parser": "babel-eslint",
+    "env": [
+      "jest",
+      "node",
+      "browser"
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "ignore": [
+    "hypercore",
+    "hypertrie",
+    "hypercore-protocol"
+  ]
+}
