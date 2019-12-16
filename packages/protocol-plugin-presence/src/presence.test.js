@@ -28,7 +28,7 @@ const createPeer = (publicKey) => {
       live: true
     }
   })
-    .setUserData({ peerId })
+    .setSession({ peerId })
     .setExtension(presence.createExtension())
     .init(publicKey)
     .stream;

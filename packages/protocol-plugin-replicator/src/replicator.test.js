@@ -27,7 +27,7 @@ const createNode = async (topic) => {
 
   // Middleware for replicator
   const middleware = {
-    subscribe (next) {
+    subscribe (next, info) {
       const onFeed = feed => next(feed, true);
       feedStore.on('feed', onFeed);
       return () => {
@@ -35,13 +35,13 @@ const createNode = async (topic) => {
         feedStore.removeListener('feed', onFeed);
       };
     },
-    async load (share) {
+    async load (share, info) {
       // I share the feed key with the remote peer, this is optional.
       await share([feed]);
 
       return [feed];
     },
-    async incoming (feeds) {
+    async incoming (feeds, info) {
       return Promise.all(feeds.map(({ key, discoveryKey }) => {
         if (discoveryKey) {
           return feedStore.getOpenFeed(d => d.discoveryKey.equals(discoveryKey));
@@ -66,6 +66,8 @@ const createNode = async (topic) => {
     },
     replicate (options) {
       return new Protocol(options)
+        .setSession({ id: 'session1' })
+        .setContext({ name: 'foo' })
         .setExtensions([replicator.createExtension()])
         .init(topic)
         .stream;
@@ -141,7 +143,7 @@ describe('test data replication in a balanced network graph of 15 peers', () => 
   let graph, peers, connections;
 
   beforeAll(async () => {
-    graph = generator.balancedBinTree(3);
+    graph = generator.balancedBinTree(1);
     peers = await createPeers(topic, graph);
     connections = await createConnections(graph);
   });

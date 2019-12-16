@@ -60,6 +60,12 @@ export class Protocol extends EventEmitter {
   _feed = undefined;
 
   /**
+   * Local object to store data for extensions.
+   * @type {Object}
+   */
+  _context = {}
+
+  /**
    * @constructor
    *
    * @param {Object} options
@@ -114,14 +120,44 @@ export class Protocol extends EventEmitter {
   }
 
   /**
-   * Sets user data which is exchanged with the peer during the handshake.
+   * Sets session data which is exchanged with the peer during the handshake.
    * @param {Object} data
    * @returns {Protocol}
    */
-  setUserData (data) {
+  setSession (data) {
     this._stream.userData = bufferJson.encode(data);
 
     return this;
+  }
+
+  /**
+   * Get remote session data.
+   * @returns {{}}
+   */
+  getSession () {
+    try {
+      return bufferJson.decode(this._stream.remoteUserData);
+    } catch (err) {
+      return {};
+    }
+  }
+
+  /**
+   * Set local context.
+   * @returns {Protocol}
+   */
+  setContext (context) {
+    this._context = Object.assign({}, context);
+
+    return this;
+  }
+
+  /**
+   * Get local context.
+   * @returns {{}}
+   */
+  getContext () {
+    return this._context;
   }
 
   /**
@@ -192,8 +228,6 @@ export class Protocol extends EventEmitter {
 
     // Handshake.
     this._stream.once('handshake', async () => {
-      const context = this.getContext();
-
       try {
         for (const [name, extension] of this._extensionMap) {
           if (this._stream.destroyed) {
@@ -201,7 +235,7 @@ export class Protocol extends EventEmitter {
           }
 
           log(`handshake extension "${name}": ${keyToHuman(this._stream.id)} <=> ${keyToHuman(this._stream.remoteId)}`);
-          await extension.onHandshake(context);
+          await extension.onHandshake();
         }
 
         if (this._stream.destroyed) {
@@ -217,11 +251,8 @@ export class Protocol extends EventEmitter {
 
       this._stream.on('feed', (discoveryKey) => {
         try {
-          // We wait for the protocol initialization handshake before start sharing feeds.
-          const context = this.getContext();
-
           this._extensionMap.forEach((extension) => {
-            extension.onFeed(context, discoveryKey);
+            extension.onFeed(discoveryKey);
           });
         } catch (err) {
           console.warn(err);
@@ -263,27 +294,13 @@ export class Protocol extends EventEmitter {
     }
 
     eos(this._stream, (err) => {
-      const context = this.getContext();
-
       this._extensionMap.forEach((extension) => {
-        extension.onClose(err, context);
+        extension.onClose(err);
       });
     });
 
     log(keyToHuman(this._stream.id, 'node'), 'initialized');
     return this;
-  }
-
-  /**
-   * Get context.
-   * @returns {{}}
-   */
-  getContext () {
-    try {
-      return bufferJson.decode(this._stream.remoteUserData);
-    } catch (err) {
-      return {};
-    }
   }
 
   /**
@@ -308,6 +325,6 @@ export class Protocol extends EventEmitter {
       return;
     }
 
-    await extension.onMessage(this.getContext(), message);
+    await extension.onMessage(message);
   }
 }

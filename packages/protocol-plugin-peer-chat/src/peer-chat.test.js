@@ -19,7 +19,7 @@ const random = arr => arr[Math.floor(Math.random() * arr.length)];
 const createNode = async (topic) => {
   const peerId = crypto.randomBytes(32);
   const messages = [];
-  const chat = new PeerChat(peerId, (protocol, context, { message }) => {
+  const chat = new PeerChat(peerId, (protocol, { message }) => {
     messages.push(message);
   });
 
@@ -29,7 +29,7 @@ const createNode = async (topic) => {
     messages,
     replicate (options) {
       return new Protocol(options)
-        .setUserData({ peerId })
+        .setSession({ peerId })
         .setExtensions([chat.createExtension()])
         .init(topic)
         .stream;

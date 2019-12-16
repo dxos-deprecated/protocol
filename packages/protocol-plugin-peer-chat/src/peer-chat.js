@@ -31,10 +31,10 @@ export class PeerChat extends EventEmitter {
 
     this._peerId = peerId;
 
-    this._onMessage = (protocol, context, message) => {
+    this._onMessage = (protocol, message) => {
       try {
         this.emit('message', message);
-        peerMessageHandler(protocol, context, message);
+        peerMessageHandler(protocol, message);
       } catch (err) {
         // do nothing
       }
@@ -43,7 +43,7 @@ export class PeerChat extends EventEmitter {
     const middleware = {
       lookup: () => {
         return Array.from(this._peers.values()).map((peer) => {
-          const { peerId } = peer.getContext();
+          const { peerId } = peer.getSession();
 
           return {
             id: peerId,
@@ -55,16 +55,16 @@ export class PeerChat extends EventEmitter {
         this._sendPeerMessage(peer.protocol, packet);
       },
       subscribe: (onPacket) => {
-        this._peerMessageHandler = (protocol, context, chunk) => {
+        this._peerMessageHandler = (protocol, chunk) => {
           const { type, data: message } = chunk;
 
           const packet = onPacket(message);
 
           // Validate if is a broadcast message or not.
           if (packet) {
-            this._onMessage(protocol, context, { type, message: packet.data.toString() });
+            this._onMessage(protocol, { type, message: packet.data.toString() });
           } else {
-            this._onMessage(protocol, context, { type, message: message.toString() });
+            this._onMessage(protocol, { type, message: message.toString() });
           }
         };
       }
@@ -154,7 +154,7 @@ export class PeerChat extends EventEmitter {
    * @private
    */
   _addPeer (protocol) {
-    const { peerId } = protocol.getContext();
+    const { peerId } = protocol.getSession();
 
     if (this._peers.has(peerId.toString('hex'))) {
       this.emit('peer:already-connected', peerId);
@@ -172,7 +172,7 @@ export class PeerChat extends EventEmitter {
    */
   _removePeer (protocol) {
     console.assert(protocol);
-    const { peerId } = protocol.getContext();
+    const { peerId } = protocol.getSession();
     this._peers.delete(peerId.toString('hex'));
     this.emit('peer:left', peerId);
   }

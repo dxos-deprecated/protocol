@@ -81,6 +81,9 @@ export class Replicator extends EventEmitter {
 
     this._peers.set(protocol, peer);
 
+    const context = protocol.getContext();
+    const session = protocol.getSession();
+
     try {
       const unsubscribe = this._subscribe((feed, metadata) => {
         if (metadata) {
@@ -94,10 +97,10 @@ export class Replicator extends EventEmitter {
         }
 
         peer.replicate([feed]);
-      });
+      }, { context, session });
       peer.on('close', unsubscribe);
 
-      const feeds = await this._load((...args) => peer.share(...args)) || [];
+      const feeds = await this._load((...args) => peer.share(...args), { context, session }) || [];
       peer.replicate(feeds);
     } catch (err) {
       console.warn('Load error: ', err);
@@ -108,10 +111,9 @@ export class Replicator extends EventEmitter {
    * Handles key exchange requests.
    *
    * @param {Protocol} protocol
-   * @param {Object} context
    * @param {Object} message
    */
-  async _messageHandler (protocol, context, message) {
+  async _messageHandler (protocol, message) {
     const { type, data } = message;
 
     try {
@@ -132,20 +134,24 @@ export class Replicator extends EventEmitter {
 
   async _incomingHandler (protocol, data) {
     const peer = this._peers.get(protocol);
+    const context = protocol.getContext();
+    const session = protocol.getSession();
 
     try {
-      const feeds = await this._incoming(data) || [];
+      const feeds = await this._incoming(data, { context, session }) || [];
       peer.replicate(feeds);
     } catch (err) {
       console.warn('Incoming feeds error', err);
     }
   }
 
-  async _feedHandler (protocol, _, discoveryKey) {
+  async _feedHandler (protocol, discoveryKey) {
     const peer = this._peers.get(protocol);
+    const context = protocol.getContext();
+    const session = protocol.getSession();
 
     try {
-      const feeds = await this._incoming([{ discoveryKey }]) || [];
+      const feeds = await this._incoming([{ discoveryKey }], { context, session }) || [];
       peer.replicate(feeds);
     } catch (err) {
       console.warn('Find feed error', err);

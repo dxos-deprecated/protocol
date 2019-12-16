@@ -34,25 +34,25 @@ export class Extension extends EventEmitter {
 
   /**
    * Handshake handler.
-   * @type {Function<{protocol, context}>}
+   * @type {Function<{protocol}>}
    */
   _handshakeHandler = null;
 
   /**
    * Close handler.
-   * @type {Function<{protocol, context}>}
+   * @type {Function<{protocol}>}
    */
   _closeHandler = null;
 
   /**
    * Message handler.
-   * @type {Function<{protocol, context, message}>}
+   * @type {Function<{protocol, message}>}
    */
   _messageHandler = null;
 
   /**
    * Feed handler.
-   * @type {Function<{protocol, context, discoveryKey}>}
+   * @type {Function<{protocol, discoveryKey}>}
    */
   _feedHandler = null;
 
@@ -97,7 +97,7 @@ export class Extension extends EventEmitter {
 
   /**
    * Sets the handshake handler.
-   * @param {Function<{protocol, context}>} handshakeHandler - Async handshake handler.
+   * @param {Function<{protocol}>} handshakeHandler - Async handshake handler.
    * @returns {Extension}
    */
   setHandshakeHandler (handshakeHandler) {
@@ -108,7 +108,7 @@ export class Extension extends EventEmitter {
 
   /**
    * Sets the close stream handler.
-   * @param {Function<{protocol, context}>} closeHandler - Close handler.
+   * @param {Function<{protocol}>} closeHandler - Close handler.
    * @returns {Extension}
    */
   setCloseHandler (closeHandler) {
@@ -119,7 +119,7 @@ export class Extension extends EventEmitter {
 
   /**
    * Sets the message handler.
-   * @param {Function<{protocol, context, message}>} messageHandler - Async message handler.
+   * @param {Function<{protocol, message}>} messageHandler - Async message handler.
    * @returns {Extension}
    */
   setMessageHandler (messageHandler) {
@@ -130,7 +130,7 @@ export class Extension extends EventEmitter {
 
   /**
    * Sets the message handler.
-   * @param {Function<{protocol, context, discoveryKey}>} feedHandler - Async feed handler.
+   * @param {Function<{protocol, discoveryKey}>} feedHandler - Async feed handler.
    * @returns {Extension}
    */
   setFeedHandler (feedHandler) {
@@ -153,33 +153,28 @@ export class Extension extends EventEmitter {
 
   /**
    * Handshake event.
-   *
-   * @param {Object} context
    */
-  onHandshake (context) {
+  onHandshake () {
     if (this._handshakeHandler) {
-      this._handshakeHandler(this._protocol, context);
+      this._handshakeHandler(this._protocol);
     }
   }
 
   /**
    * Close event.
-   *
-   * @param {Object} context
    */
-  onClose (error, context) {
+  onClose (error) {
     if (this._closeHandler) {
-      this._closeHandler(error, this._protocol, context);
+      this._closeHandler(error, this._protocol);
     }
   }
 
   /**
    * Receives extension message.
    *
-   * @param {Object} context
    * @param {Buffer} message
    */
-  async onMessage (context, message) {
+  async onMessage (message) {
     const { id, error, data: requestData, options = {} } = this._codec.decode(message);
 
     // Check for a pending request.
@@ -188,7 +183,7 @@ export class Extension extends EventEmitter {
     const senderCallback = this._pendingMessages.get(idHex);
     if (senderCallback) {
       this._pendingMessages.delete(idHex);
-      senderCallback(context, requestData, error);
+      senderCallback(requestData, error);
       return;
     }
 
@@ -201,7 +196,7 @@ export class Extension extends EventEmitter {
     try {
       // Process the message.
       log(`received ${keyToHuman(this._protocol.stream.id, 'node')}: ${keyToHuman(id, 'msg')}`);
-      let responseData = await this._messageHandler(this._protocol, context, requestData, options);
+      let responseData = await this._messageHandler(this._protocol, requestData, options);
       responseData = Buffer.isBuffer(responseData) ? { __type_url: 'Buffer', data: responseData } : responseData;
 
       if (options.oneway) {
@@ -227,12 +222,11 @@ export class Extension extends EventEmitter {
   /**
    * Feed event.
    *
-   * @param {Object} context
    * @param {Buffer} discoveryKey
    */
-  onFeed (context, discoveryKey) {
+  onFeed (discoveryKey) {
     if (this._feedHandler) {
-      this._feedHandler(this._protocol, context, discoveryKey);
+      this._feedHandler(this._protocol, discoveryKey);
     }
   }
 
@@ -267,7 +261,7 @@ export class Extension extends EventEmitter {
     const promise = {};
 
     // Set the callback to be called when the response is received.
-    this._pendingMessages.set(request.id.toString('hex'), async (context, response, error) => {
+    this._pendingMessages.set(request.id.toString('hex'), async (response, error) => {
       log(`response ${keyToHuman(this._protocol.stream.id, 'node')}: ${keyToHuman(request.id, 'msg')}`);
       this._stats.receive++;
       this.emit('receive', this._stats);
@@ -283,7 +277,7 @@ export class Extension extends EventEmitter {
         return;
       }
 
-      promise.resolve({ context, response });
+      promise.resolve({ response });
     });
 
     return new Promise((resolve, reject) => {

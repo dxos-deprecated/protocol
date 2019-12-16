@@ -28,14 +28,14 @@ test('protocol', async () => {
   const { publicKey } = crypto.keyPair();
 
   const protocol1 = new Protocol()
-    .setUserData({ user: 'user1' })
+    .setSession({ user: 'user1' })
     .setExtension(new Extension(bufferExtension, { timeout }))
     .init(publicKey);
 
   const protocol2 = new Protocol()
-    .setUserData({ user: 'user2' })
+    .setSession({ user: 'user2' })
     .setExtension(new Extension(bufferExtension, { timeout })
-      .setMessageHandler(async (protocol, context, message, options) => {
+      .setMessageHandler(async (protocol, message, options) => {
         const { data } = message;
 
         if (options.oneway) {
@@ -70,9 +70,12 @@ test('protocol', async () => {
       log('Error: %o', err);
     });
 
+    const session = protocol.getSession();
+
+    expect(session.user).toBe('user2');
+
     {
-      const { context, response: { data } } = await bufferMessages.send(Buffer.from('ping'));
-      expect(context.user).toBe('user2');
+      const { response: { data } } = await bufferMessages.send(Buffer.from('ping'));
       expect(data).toEqual(Buffer.from('pong'));
     }
 

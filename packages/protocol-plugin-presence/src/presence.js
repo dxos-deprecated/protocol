@@ -67,7 +67,7 @@ export class Presence extends EventEmitter {
     return new Extension(Presence.EXTENSION_NAME)
       .setMessageHandler(this._peerMessageHandler.bind(this))
       .setHandshakeHandler((protocol) => {
-        log('handshake', protocol.getContext());
+        log('handshake', protocol.getSession());
         this._addPeer(protocol);
       })
       .setCloseHandler((err, protocol) => {
@@ -76,7 +76,7 @@ export class Presence extends EventEmitter {
         if (err && !protocolErrors.includes(err.message)) {
           console.warn(err.message);
         }
-        log('close', protocol.getContext(), err && err.message);
+        log('close', protocol.getSession(), err && err.message);
         this._removePeer(protocol);
       });
   }
@@ -86,7 +86,7 @@ export class Presence extends EventEmitter {
       const message = {
         peerId: this._peerId,
         connections: Array.from(this._neighbors.values()).map((peer) => {
-          const { peerId } = peer.getContext();
+          const { peerId } = peer.getSession();
           return { peerId };
         })
       };
@@ -144,7 +144,7 @@ export class Presence extends EventEmitter {
     const middleware = {
       lookup: () => {
         return Array.from(this._neighbors.values()).map((peer) => {
-          const { peerId } = peer.getContext();
+          const { peerId } = peer.getSession();
 
           return {
             id: peerId,
@@ -157,7 +157,7 @@ export class Presence extends EventEmitter {
         await presence.send(packet, { oneway: true });
       },
       subscribe: (onPacket) => {
-        this.on('protocol-message', (protocol, context, message) => {
+        this.on('protocol-message', (protocol, message) => {
           if (message && message.data) {
             onPacket(message.data);
           }
@@ -176,8 +176,8 @@ export class Presence extends EventEmitter {
     this.on('remote-ping', packet => this._updateNetwork(packet));
   }
 
-  _peerMessageHandler (protocol, context, chunk) {
-    this.emit('protocol-message', protocol, context, chunk);
+  _peerMessageHandler (protocol, chunk) {
+    this.emit('protocol-message', protocol, chunk);
   }
 
   _pruneNetwork () {
@@ -202,14 +202,14 @@ export class Presence extends EventEmitter {
    */
   _addPeer (protocol) {
     console.assert(protocol);
-    const context = protocol.getContext();
+    const session = protocol.getSession();
 
-    if (!context || !context.peerId) {
+    if (!session || !session.peerId) {
       this.emit('error', new Error('peerId not found'));
       return;
     }
 
-    const { peerId } = context;
+    const { peerId } = session;
     const peerIdHex = peerId.toString('hex');
 
     if (this._neighbors.has(peerIdHex)) {
@@ -239,10 +239,10 @@ export class Presence extends EventEmitter {
    */
   _removePeer (protocol) {
     console.assert(protocol);
-    const context = protocol.getContext();
-    if (!context || !context.peerId) return;
+    const session = protocol.getSession();
+    if (!session || !session.peerId) return;
 
-    const { peerId } = context;
+    const { peerId } = session;
     const peerIdHex = peerId.toString('hex');
 
     this._neighbors.delete(peerIdHex);
