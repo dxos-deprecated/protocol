@@ -2,6 +2,7 @@
   "name": "@dxos/protocol-plugin-peer-chat",
   "version": "0.0.1",
   "description": "Protocol plugin peer chat.",
+  "private": true,
   "homepage": "https://github.com/dxos/protocol/tree/master/packages/protocol-plugin-peer-chat#readme",
   "bugs": {
     "url": "https://github.com/dxos/protocol/issues"
@@ -61,9 +62,6 @@
     "pump": "^3.0.0",
     "semistandard": "^14.2.0",
     "wait-for-expect": "^3.0.1"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "semistandard": {
     "parser": "babel-eslint",
