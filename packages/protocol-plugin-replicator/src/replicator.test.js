@@ -27,7 +27,7 @@ const createNode = async (topic) => {
 
   // Middleware for replicator
   const middleware = {
-    subscribe (next, info) {
+    subscribe (next) {
       const onFeed = feed => next(feed);
       feedStore.on('feed', onFeed);
       return () => {
@@ -35,10 +35,10 @@ const createNode = async (topic) => {
         feedStore.removeListener('feed', onFeed);
       };
     },
-    async load (info) {
+    async load () {
       return [feed];
     },
-    async incoming (feeds, info) {
+    async replicate (feeds) {
       return Promise.all(feeds.map(({ key, discoveryKey }) => {
         if (discoveryKey) {
           return feedStore.getOpenFeed(d => d.discoveryKey.equals(discoveryKey));

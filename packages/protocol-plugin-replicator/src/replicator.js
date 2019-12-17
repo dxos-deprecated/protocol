@@ -13,7 +13,7 @@ import schema from './schema.json';
 
 const log = debug('dxos.replicator');
 
-const defaultIncoming = () => {};
+const defaultReplicate = () => {};
 const defaultSubscribe = () => () => {};
 
 /**
@@ -31,13 +31,13 @@ export class Replicator extends EventEmitter {
     assert(middleware);
     assert(middleware.load);
 
-    const { load, subscribe = defaultSubscribe, incoming = defaultIncoming } = middleware;
+    const { load, subscribe = defaultSubscribe, replicate = defaultReplicate } = middleware;
 
     super();
 
     this._load = async (...args) => load(...args);
     this._subscribe = (...args) => subscribe(...args);
-    this._incoming = async (...args) => incoming(...args);
+    this._replicate = async (...args) => replicate(...args);
 
     this._options = Object.assign({
       timeout: 1000
@@ -109,7 +109,7 @@ export class Replicator extends EventEmitter {
     try {
       switch (type) {
         case 'share-feeds': {
-          await this._incomingHandler(protocol, data || []);
+          await this._replicateHandler(protocol, data || []);
           break;
         }
 
@@ -122,32 +122,22 @@ export class Replicator extends EventEmitter {
     }
   }
 
-  async _incomingHandler (protocol, data) {
+  async _replicateHandler (protocol, data) {
     const peer = this._peers.get(protocol);
     const context = protocol.getContext();
     const session = protocol.getSession();
     const info = { context, session };
 
     try {
-      const feeds = await this._incoming(data, info) || [];
+      const feeds = await this._replicate(data, info) || [];
       peer.replicate(feeds);
     } catch (err) {
-      console.warn('Incoming feeds error', err);
+      console.warn('Replicate feeds error', err);
     }
   }
 
   async _feedHandler (protocol, discoveryKey) {
-    const peer = this._peers.get(protocol);
-    const context = protocol.getContext();
-    const session = protocol.getSession();
-    const info = { context, session };
-
-    try {
-      const feeds = await this._incoming([{ discoveryKey }], info) || [];
-      peer.replicate(feeds);
-    } catch (err) {
-      console.warn('Find feed error', err);
-    }
+    await this._replicateHandler(protocol, [{ discoveryKey }]);
   }
 
   _closeHandler (err, protocol) {
