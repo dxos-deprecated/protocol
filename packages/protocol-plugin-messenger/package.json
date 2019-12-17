@@ -1,9 +1,8 @@
 {
-  "name": "@dxos/protocol-plugin-peer-chat",
+  "name": "@dxos/protocol-plugin-messenger",
   "version": "0.0.3",
-  "description": "Protocol plugin peer chat.",
-  "private": true,
-  "homepage": "https://github.com/dxos/protocol/tree/master/packages/protocol-plugin-peer-chat#readme",
+  "description": "Protocol plugin messenger.",
+  "homepage": "https://github.com/dxos/protocol/tree/master/packages/protocol-plugin-messenger#readme",
   "bugs": {
     "url": "https://github.com/dxos/protocol/issues"
   },
@@ -38,7 +37,7 @@
   },
   "dependencies": {
     "@dxos/broadcast": "^0.0.3",
-    "@dxos/codec-protobuf": "1.1.0-beta.2",
+    "@dxos/codec-protobuf": "^1.1.0-beta.3",
     "@dxos/protocol": "^0.0.3",
     "debug": "^4.1.1",
     "source-map-support": "^0.5.12"
@@ -62,6 +61,9 @@
     "pump": "^3.0.0",
     "semistandard": "^14.2.0",
     "wait-for-expect": "^3.0.1"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "semistandard": {
     "parser": "babel-eslint",

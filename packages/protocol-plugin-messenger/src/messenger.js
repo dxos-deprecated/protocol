@@ -3,17 +3,17 @@
 //
 
 import { EventEmitter } from 'events';
+import assert from 'assert';
 
+import { Codec } from '@dxos/codec-protobuf';
 import { Broadcast } from '@dxos/broadcast';
 import { Extension } from '@dxos/protocol';
-
-import schema from './schema.json';
 
 /**
  * Peer chat.
  */
-export class PeerChat extends EventEmitter {
-  static EXTENSION_NAME = 'dxos.protocol.peerchat';
+export class Messenger extends EventEmitter {
+  static EXTENSION_NAME = 'dxos.protocol.messenger';
 
   // @type {Map<{string, Protocol>}
   _peers = new Map();
@@ -56,16 +56,12 @@ export class PeerChat extends EventEmitter {
       },
       subscribe: (onPacket) => {
         this._peerMessageHandler = (protocol, chunk) => {
-          const { type, data: message } = chunk;
-
-          const packet = onPacket(message);
+          const packet = onPacket(chunk.data);
 
           // Validate if is a broadcast message or not.
-          if (packet) {
-            this._onMessage(protocol, { type, message: packet.data.toString() });
-          } else {
-            this._onMessage(protocol, { type, message: message.toString() });
-          }
+          const message = this._codec.decode(packet ? packet.data : chunk.data);
+
+          this._onMessage(protocol, message);
         };
       }
     };
@@ -73,6 +69,10 @@ export class PeerChat extends EventEmitter {
     this._broadcast = new Broadcast(middleware, {
       id: this._peerId
     });
+
+    this._codec = new Codec('dxos.protocol.messenger.Message')
+      .addJson(require('./schema.json'))
+      .build();
 
     this._broadcast.run();
   }
@@ -86,7 +86,7 @@ export class PeerChat extends EventEmitter {
    * @return {Extension}
    */
   createExtension () {
-    return new Extension(PeerChat.EXTENSION_NAME, { schema: JSON.parse(schema) })
+    return new Extension(Messenger.EXTENSION_NAME)
       .setMessageHandler(this._peerMessageHandler)
       .setHandshakeHandler((protocol) => {
         this._addPeer(protocol);
@@ -103,24 +103,29 @@ export class PeerChat extends EventEmitter {
 
   /**
    * Broadcast message to peers.
-   * @param {string} message
+   * @param {string} type
+   * @param {Buffer} payload
    * @return {Promise<void>}
    */
-  async broadcastMessage (message) {
-    console.assert(message);
+  async broadcastMessage (type, payload) {
+    assert(type);
+    assert(Buffer.isBuffer(payload));
 
-    await this._broadcast.publish(Buffer.from(message));
+    const buffer = this._codec.encode({ type, payload });
+    await this._broadcast.publish(buffer);
   }
 
   /**
    * Send message to peer.
    * @param {Buffer} peerId
-   * @param {string} message
+   * @param {string} type
+   * @param {string} payload
    * @return {Promise<void>}
    */
-  async sendMessage (peerId, message) {
-    console.assert(peerId);
-    console.assert(message);
+  async sendMessage (peerId, type, payload) {
+    assert(peerId);
+    assert(type);
+    assert(Buffer.isBuffer(payload));
 
     // Backward compatibility (peerId should always be a Buffer)
     if (typeof peerId === 'string') {
@@ -133,19 +138,20 @@ export class PeerChat extends EventEmitter {
       return;
     }
 
-    await this._sendPeerMessage(peer, Buffer.from(message));
+    const buffer = this._codec.encode({ type, payload });
+    await this._sendPeerMessage(peer, buffer);
   }
 
   /**
    * Send message to peer.
    * @param {Protocol} peer
-   * @param {Buffer} message
+   * @param {Buffer} buffer
    * @return {Promise<void>}
    * @private
    */
-  async _sendPeerMessage (peer, message) {
-    const chat = peer.getExtension(PeerChat.EXTENSION_NAME);
-    await chat.send({ __type_url: 'dxos.protocol.peerchat.Message', type: 'message', data: message }, { oneway: true });
+  async _sendPeerMessage (peer, buffer) {
+    const chat = peer.getExtension(Messenger.EXTENSION_NAME);
+    await chat.send(buffer, { oneway: true });
   }
 
   /**

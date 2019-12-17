@@ -4,7 +4,7 @@
       "nested": {
         "protocol": {
           "nested": {
-            "peerchat": {
+            "messenger": {
               "nested": {
                 "Message": {
                   "fields": {
@@ -12,7 +12,7 @@
                       "type": "string",
                       "id": 1
                     },
-                    "data": {
+                    "payload": {
                       "type": "bytes",
                       "id": 2
                     }

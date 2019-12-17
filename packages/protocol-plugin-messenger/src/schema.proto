@@ -4,9 +4,9 @@
 
 syntax = "proto3";
 
-package dxos.protocol.peerchat;
+package dxos.protocol.messenger;
 
 message Message {
   string type = 1;
-  bytes data = 2;
+  bytes payload = 2;
 }

@@ -10,7 +10,7 @@ import waitForExpect from 'wait-for-expect';
 
 import { Protocol } from '@dxos/protocol';
 
-import { PeerChat } from '.';
+import { Messenger } from '.';
 
 jest.setTimeout(30000);
 
@@ -19,8 +19,8 @@ const random = arr => arr[Math.floor(Math.random() * arr.length)];
 const createNode = async (topic) => {
   const peerId = crypto.randomBytes(32);
   const messages = [];
-  const chat = new PeerChat(peerId, (protocol, { message }) => {
-    messages.push(message);
+  const chat = new Messenger(peerId, (protocol, { type, payload }) => {
+    messages.push(`${type}:${payload.toString()}`);
   });
 
   return {
@@ -93,22 +93,22 @@ describe('test peer chat in a network graph of 15 peers', () => {
     let peer2 = random(peer1.chat.peers);
     peer2 = peers.find(p => p.id.equals(peer2));
 
-    peer1.chat.sendMessage(peer2.id, 'ping');
+    peer1.chat.sendMessage(peer2.id, 'general', Buffer.from('ping'));
 
     await waitForExpect(() => {
-      expect(peer2.messages).toEqual(['ping']);
+      expect(peer2.messages).toEqual(['general:ping']);
     });
 
     peer2.messages.length = 0;
 
-    await peer1.chat.broadcastMessage('ping');
+    await peer1.chat.broadcastMessage('general', Buffer.from('ping'));
 
     await waitForExpect(() => {
       peers.forEach(peer => {
         if (peer === peer1) {
           return;
         }
-        expect(peer.messages).toEqual(['ping']);
+        expect(peer.messages).toEqual(['general:ping']);
       });
     }, 10000, 5000);
 
