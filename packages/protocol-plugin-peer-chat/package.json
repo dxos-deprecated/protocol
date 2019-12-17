@@ -1,6 +1,6 @@
 {
   "name": "@dxos/protocol-plugin-peer-chat",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Protocol plugin peer chat.",
   "private": true,
   "homepage": "https://github.com/dxos/protocol/tree/master/packages/protocol-plugin-peer-chat#readme",
@@ -39,7 +39,7 @@
   "dependencies": {
     "@dxos/broadcast": "^0.0.3",
     "@dxos/codec-protobuf": "1.1.0-beta.2",
-    "@dxos/protocol": "^0.0.2",
+    "@dxos/protocol": "^0.0.3",
     "debug": "^4.1.1",
     "source-map-support": "^0.5.12"
   },
