@@ -30,11 +30,15 @@ export class Peer extends EventEmitter {
   /**
    * Share feeds to the remote peer.
    *
-   * @param {Object[]} [feeds] List of feeds of type: [{ key: Buffer, metadata: Buffer }]
+   * @param {(Object[]|Object)} [feeds] List of feeds of type: [{ key: Buffer, metadata: Buffer }]
    * @returns {Promise}
    */
   async share (feeds = []) {
     log('share', feeds);
+
+    if (!Array.isArray(feeds)) {
+      feeds = [feeds];
+    }
 
     if (feeds.length === 0) {
       return;

@@ -25,9 +25,13 @@
                       "type": "bytes",
                       "id": 1
                     },
-                    "metadata": {
+                    "discoveryKey": {
                       "type": "bytes",
                       "id": 2
+                    },
+                    "metadata": {
+                      "type": "bytes",
+                      "id": 3
                     }
                   }
                 }

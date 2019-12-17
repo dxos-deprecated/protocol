@@ -28,17 +28,14 @@ const createNode = async (topic) => {
   // Middleware for replicator
   const middleware = {
     subscribe (next, info) {
-      const onFeed = feed => next(feed, true);
+      const onFeed = feed => next(feed);
       feedStore.on('feed', onFeed);
       return () => {
         closed = true;
         feedStore.removeListener('feed', onFeed);
       };
     },
-    async load (share, info) {
-      // I share the feed key with the remote peer, this is optional.
-      await share([feed]);
-
+    async load (info) {
       return [feed];
     },
     async incoming (feeds, info) {
@@ -143,7 +140,7 @@ describe('test data replication in a balanced network graph of 15 peers', () => 
   let graph, peers, connections;
 
   beforeAll(async () => {
-    graph = generator.balancedBinTree(1);
+    graph = generator.balancedBinTree(3);
     peers = await createPeers(topic, graph);
     connections = await createConnections(graph);
   });

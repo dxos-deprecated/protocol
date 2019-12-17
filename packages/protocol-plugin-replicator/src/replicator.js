@@ -83,25 +83,15 @@ export class Replicator extends EventEmitter {
 
     const context = protocol.getContext();
     const session = protocol.getSession();
+    const info = { context, session };
 
     try {
-      const unsubscribe = this._subscribe((feed, metadata) => {
-        if (metadata) {
-          peer.share([{
-            key: feed.key,
-            metadata: Buffer.isBuffer(metadata) ? metadata : undefined
-          }]).finally(() => {
-            peer.replicate([feed]);
-          });
-          return;
-        }
-
-        peer.replicate([feed]);
-      }, { context, session });
+      const share = feeds => peer.share(feeds);
+      const unsubscribe = this._subscribe(share, info);
       peer.on('close', unsubscribe);
 
-      const feeds = await this._load((...args) => peer.share(...args), { context, session }) || [];
-      peer.replicate(feeds);
+      const feeds = await this._load(info) || [];
+      await share(feeds);
     } catch (err) {
       console.warn('Load error: ', err);
     }
@@ -136,9 +126,10 @@ export class Replicator extends EventEmitter {
     const peer = this._peers.get(protocol);
     const context = protocol.getContext();
     const session = protocol.getSession();
+    const info = { context, session };
 
     try {
-      const feeds = await this._incoming(data, { context, session }) || [];
+      const feeds = await this._incoming(data, info) || [];
       peer.replicate(feeds);
     } catch (err) {
       console.warn('Incoming feeds error', err);
@@ -149,9 +140,10 @@ export class Replicator extends EventEmitter {
     const peer = this._peers.get(protocol);
     const context = protocol.getContext();
     const session = protocol.getSession();
+    const info = { context, session };
 
     try {
-      const feeds = await this._incoming([{ discoveryKey }], { context, session }) || [];
+      const feeds = await this._incoming([{ discoveryKey }], info) || [];
       peer.replicate(feeds);
     } catch (err) {
       console.warn('Find feed error', err);
