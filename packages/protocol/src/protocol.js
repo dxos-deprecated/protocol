@@ -218,12 +218,15 @@ export class Protocol extends EventEmitter {
 
     this._init = true;
 
-    // See https://github.com/wirelineio/wireline-core/blob/master/docs/design/appendix.md#swarming--dat-protocol-handshake for details.
-
     // Initialize extensions.
-    this._extensionMap.forEach((extension) => {
-      this._stream.extensions.push(extension.name);
+    const sortedExtensions = [];
+    this._extensionMap.forEach(extension => {
+      sortedExtensions.push(extension.name);
       extension.init(this);
+    });
+
+    sortedExtensions.sort().forEach(name => {
+      this._stream.extensions.push(name);
     });
 
     // Handshake.
