@@ -1,6 +1,6 @@
 {
   "name": "@dxos/protocol-plugin-presence",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Protocol plugin presence.",
   "homepage": "https://github.com/dxos/protocol/tree/master/packages/protocol-plugin-presence#readme",
   "bugs": {
@@ -38,7 +38,7 @@
   "dependencies": {
     "@dxos/broadcast": "^0.0.3",
     "@dxos/codec-protobuf": "1.1.0-beta.2",
-    "@dxos/protocol": "^0.0.5",
+    "@dxos/protocol": "^0.0.6",
     "debug": "^4.1.1",
     "ngraph.graph": "^19.0.1",
     "queue-microtask": "^1.1.2",
