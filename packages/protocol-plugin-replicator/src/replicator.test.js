@@ -40,17 +40,21 @@ const createNode = async (topic) => {
     },
     async replicate (feeds) {
       return Promise.all(feeds.map(({ key, discoveryKey }) => {
+        if (key) {
+          const feed = feedStore.getOpenFeed(d => d.key.equals(key));
+
+          if (feed) {
+            return feed;
+          }
+
+          return feedStore.openFeed(`/${key.toString('hex')}`, { key });
+        }
+
         if (discoveryKey) {
           return feedStore.getOpenFeed(d => d.discoveryKey.equals(discoveryKey));
         }
 
-        const feed = feedStore.getOpenFeed(d => d.key.equals(key));
-
-        if (feed) {
-          return feed;
-        }
-
-        return feedStore.openFeed(`/${key.toString('hex')}`, { key });
+        return null;
       }));
     }
   };

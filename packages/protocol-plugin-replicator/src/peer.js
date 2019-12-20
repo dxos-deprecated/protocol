@@ -47,7 +47,7 @@ export class Peer extends EventEmitter {
     const message = {
       __type_url: 'dxos.protocol.replicator.Container',
       type: 'share-feeds',
-      data: feeds.map(({ key, metadata }) => ({ __type_url: 'dxos.protocol.replicator.Feed', key, metadata }))
+      data: feeds.map(({ key, discoveryKey, metadata }) => ({ __type_url: 'dxos.protocol.replicator.Feed', key, discoveryKey, metadata }))
     };
 
     await this._extension.send(message, { oneway: true });

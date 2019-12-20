@@ -143,7 +143,9 @@ export class Replicator extends EventEmitter {
   _closeHandler (err, protocol) {
     log('replicator close', err);
     const peer = this._peers.get(protocol);
-    peer._close();
+    if (peer) {
+      peer._close();
+    }
     this._peers.delete(protocol);
   }
 }
