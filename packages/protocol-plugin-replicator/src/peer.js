@@ -47,7 +47,7 @@ export class Peer extends EventEmitter {
     const message = {
       __type_url: 'dxos.protocol.replicator.Container',
       type: 'share-feeds',
-      data: feeds.map(({ key, metadata }) => ({ __type_url: 'dxos.protocol.replicator.Feed', key, metadata }))
+      data: feeds.map(({ key, discoveryKey, metadata }) => ({ __type_url: 'dxos.protocol.replicator.Feed', key, discoveryKey, metadata }))
     };
 
     await this._extension.send(message, { oneway: true });
@@ -59,6 +59,19 @@ export class Peer extends EventEmitter {
    */
   replicate (feeds = []) {
     feeds.forEach(feed => this._replicate(feed));
+  }
+
+  /**
+   * Close the peer.
+   */
+  close () {
+    const { stream } = this._protocol;
+
+    if (!stream.destroyed) {
+      stream.destroy();
+    }
+
+    this.emit('close');
   }
 
   /**
@@ -96,18 +109,5 @@ export class Peer extends EventEmitter {
     log('stream replicated', feed.key.toString('hex'));
 
     return true;
-  }
-
-  /**
-   * Close the peer.
-   */
-  _close () {
-    const { stream } = this._protocol;
-
-    if (!stream.destroyed) {
-      stream.destroy();
-    }
-
-    this.emit('close');
   }
 }
