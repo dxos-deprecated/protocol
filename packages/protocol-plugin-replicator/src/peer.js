@@ -62,6 +62,19 @@ export class Peer extends EventEmitter {
   }
 
   /**
+   * Close the peer.
+   */
+  close () {
+    const { stream } = this._protocol;
+
+    if (!stream.destroyed) {
+      stream.destroy();
+    }
+
+    this.emit('close');
+  }
+
+  /**
    * Replicate a feed.
    * @param {Hypercore} feed
    * @returns {boolean} - true if `feed.replicate` was called.
@@ -96,18 +109,5 @@ export class Peer extends EventEmitter {
     log('stream replicated', feed.key.toString('hex'));
 
     return true;
-  }
-
-  /**
-   * Close the peer.
-   */
-  _close () {
-    const { stream } = this._protocol;
-
-    if (!stream.destroyed) {
-      stream.destroy();
-    }
-
-    this.emit('close');
   }
 }
