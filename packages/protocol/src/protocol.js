@@ -12,7 +12,7 @@ import bufferJson from 'buffer-json-encoding';
 
 import { keyToHuman } from './utils';
 
-const log = debug('protocol');
+const log = debug('dxos:protocol');
 
 /**
  * Protocol error with HTTP-like codes.

@@ -3,9 +3,9 @@
 //
 
 import assert from 'assert';
-import { EventEmitter } from 'events';
 import crypto from 'crypto';
 import debug from 'debug';
+import { EventEmitter } from 'events';
 
 import { Codec } from '@dxos/codec-protobuf';
 
@@ -13,7 +13,7 @@ import { keyToHuman } from './utils';
 import { ProtocolError } from './protocol';
 import schema from './schema.json';
 
-const log = debug('extension');
+const log = debug('dxos:protocol:extension');
 
 /**
  * Reliable message passing via using Dat protocol extensions.
@@ -195,7 +195,7 @@ export class Extension extends EventEmitter {
 
     try {
       // Process the message.
-      log(`received ${keyToHuman(this._protocol.stream.id, 'node')}: ${keyToHuman(id, 'msg')}`);
+      log(`Received ${keyToHuman(this._protocol.stream.id, 'node')}: ${keyToHuman(id, 'msg')}`);
       let responseData = await this._messageHandler(this._protocol, requestData, options);
       responseData = Buffer.isBuffer(responseData) ? { __type_url: 'Buffer', data: responseData } : responseData;
 
@@ -205,9 +205,10 @@ export class Extension extends EventEmitter {
 
       // Send the response.
       const response = { id, data: responseData };
-      log(`responding ${keyToHuman(this._protocol.stream.id, 'node')}: ${keyToHuman(id, 'msg')}`);
+      log(`Responding ${keyToHuman(this._protocol.stream.id, 'node')}: ${keyToHuman(id, 'msg')}`);
       this._protocol.feed.extension(this._name, this._codec.encode(response));
     } catch (err) {
+      log(err);
       if (options.oneway) {
         return;
       }
@@ -262,7 +263,7 @@ export class Extension extends EventEmitter {
 
     // Set the callback to be called when the response is received.
     this._pendingMessages.set(request.id.toString('hex'), async (response, error) => {
-      log(`response ${keyToHuman(this._protocol.stream.id, 'node')}: ${keyToHuman(request.id, 'msg')}`);
+      log(`Response ${keyToHuman(this._protocol.stream.id, 'node')}: ${keyToHuman(request.id, 'msg')}`);
       this._stats.receive++;
       this.emit('receive', this._stats);
       promise.done = true;
@@ -300,11 +301,11 @@ export class Extension extends EventEmitter {
   /**
    * Sends a extension message.
    *
-   * @param {Buffer} message
+   * @param {Buffer} request
    * @returns {Boolean}
    */
   _send (request) {
-    log(`sending a message ${keyToHuman(this._protocol.stream.id, 'node')}: ${keyToHuman(request.id, 'msg')}`);
+    log(`Sending a message ${keyToHuman(this._protocol.stream.id, 'node')}: ${keyToHuman(request.id, 'msg')}`);
     this._protocol.feed.extension(this._name, this._codec.encode(request));
 
     this._stats.send++;
