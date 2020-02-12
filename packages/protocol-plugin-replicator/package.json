@@ -1,6 +1,6 @@
 {
   "name": "@dxos/protocol-plugin-replicator",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Protocol plugin replicator.",
   "homepage": "https://github.com/dxos/protocol/tree/master/packages/protocol-plugin-replicator#readme",
   "bugs": {
@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@dxos/codec-protobuf": "1.1.0-beta.2",
-    "@dxos/protocol": "^0.0.9",
+    "@dxos/protocol": "^0.0.10",
     "debug": "^4.1.1",
     "source-map-support": "^0.5.12"
   },
