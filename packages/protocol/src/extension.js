@@ -266,7 +266,6 @@ export class Extension extends EventEmitter {
       log(`Response ${keyToHuman(this._protocol.stream.id, 'node')}: ${keyToHuman(request.id, 'msg')}`);
       this._stats.receive++;
       this.emit('receive', this._stats);
-      promise.done = true;
 
       if (error) {
         promise.reject(error);
@@ -282,19 +281,24 @@ export class Extension extends EventEmitter {
     });
 
     return new Promise((resolve, reject) => {
-      promise.resolve = resolve;
-      promise.reject = reject;
+      let timeoutHandle = null;
 
       // Set timeout.
       if (this._options.timeout) {
-        setTimeout(() => {
-          if (!promise.done) {
-            promise.expired = true;
-            this._stats.error++;
-            reject({ code: 'ERR_REQUEST_TIMEOUT' }); // eslint-disable-line
-          }
+        timeoutHandle = setTimeout(() => {
+          this._stats.error++;
+          reject({ code: 'ERR_REQUEST_TIMEOUT' }); // eslint-disable-line
         }, this._options.timeout);
       }
+
+      promise.resolve = (...args) => {
+        if (timeoutHandle) clearTimeout(timeoutHandle);
+        resolve(...args);
+      };
+      promise.reject = (err) => {
+        if (timeoutHandle) clearTimeout(timeoutHandle);
+        reject(err);
+      };
     });
   }
 
