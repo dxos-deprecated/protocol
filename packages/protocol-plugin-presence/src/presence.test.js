@@ -2,26 +2,26 @@
 // Copyright 2019 DxOS.
 //
 
-import crypto from 'hypercore-crypto';
+import crypto from 'crypto';
 import waitForExpect from 'wait-for-expect';
 import debug from 'debug';
 import path from 'ngraph.path';
-import pump from 'pump';
 
 import { Protocol } from '@dxos/protocol';
+import { ProtocolNetworkGenerator } from '@dxos/protocol-network-generator';
 
 import { Presence } from './presence';
 
 const log = debug('test');
 debug.enable('test');
 
-const TIMEOUT = 16 * 1000;
+const TIMEOUT = 30 * 1000;
 
 jest.setTimeout(TIMEOUT);
 
-const createPeer = (publicKey) => {
-  const peerId = crypto.randomBytes(6);
+const random = arr => arr[Math.floor(Math.random() * arr.length)];
 
+const generator = new ProtocolNetworkGenerator((topic, peerId) => {
   const presence = new Presence(peerId);
   const stream = () => new Protocol({
     streamOptions: {
@@ -30,15 +30,20 @@ const createPeer = (publicKey) => {
   })
     .setSession({ peerId })
     .setExtension(presence.createExtension())
-    .init(publicKey)
+    .init(topic)
     .stream;
 
   return { id: peerId, presence, stream };
-};
+});
 
-const connect = (source, target) => {
-  return pump(source.stream(), target.stream(), source.stream());
-};
+function links (graph) {
+  const links = [];
+  graph.forEachLink(link => {
+    const t = [link.fromId, link.toId].sort();
+    links.push(t.join(' --> '));
+  });
+  return links;
+}
 
 test('presence', async () => {
   const waitOneWayMessage = {};
@@ -46,45 +51,48 @@ test('presence', async () => {
     waitOneWayMessage.resolve = resolve;
   });
 
-  const { publicKey } = crypto.keyPair();
-
-  const peer1 = createPeer(publicKey);
-  const peer2 = createPeer(publicKey);
-  const peer3 = createPeer(publicKey);
-  const peer4 = createPeer(publicKey);
-
-  peer1.presence.on('peer:joined', (peerId) => {
-    log(`peer:joined ${peerId.toString('hex')}`);
+  const topic = crypto.randomBytes(32);
+  const network = await generator.balancedBinTree({
+    topic,
+    waitForFullConnection: false,
+    parameters: [3]
   });
 
-  peer1.presence.on('peer:left', (peerId) => {
-    log(`peer:left ${peerId.toString('hex')}`);
+  network.on('peer:deleted', peer => {
+    log(`peer ${peer.id.toString('hex')} destroyed`);
+    peer.presence.stop();
   });
 
-  const connections = [
-    connect(peer1, peer2),
-    connect(peer2, peer3),
-    connect(peer3, peer4)
-  ];
+  const peer1 = random(network.peers);
 
   await waitForExpect(() => {
-    const pathFinder = path.aStar(peer1.presence.network);
-    const fromId = peer1.id.toString('hex');
-    expect(pathFinder.find(fromId, peer2.id.toString('hex')).length).toBeGreaterThan(0);
-    expect(pathFinder.find(fromId, peer3.id.toString('hex')).length).toBeGreaterThan(0);
-    expect(pathFinder.find(fromId, peer4.id.toString('hex')).length).toBeGreaterThan(0);
+    expect(network.connections.length).toBe(peer1.presence.graph.getLinksCount());
   }, TIMEOUT, 2 * 1000);
+
+  log('original network');
+  links(network.graph).forEach(val => log(val));
+
+  log('presence network');
+  links(peer1.presence.graph).forEach(val => log(val));
+
+  await waitForExpect(() => {
+    const pathFinder = path.nba(peer1.presence.graph);
+    const fromId = peer1.id.toString('hex');
+
+    const result = network.peers
+      .filter(peer => peer !== peer1)
+      .reduce((prev, peer) => {
+        return prev && pathFinder.find(fromId, peer.id.toString('hex')).length > 0;
+      }, true);
+
+    expect(result).toBe(true);
+  }, TIMEOUT, 5 * 1000);
 
   log('network full connected');
 
-  connections.forEach(con => con.destroy());
+  await network.destroy();
 
   await waitForExpect(() => {
-    expect(peer1.presence.network.getNodesCount()).toBe(1);
+    expect(peer1.presence.graph.getNodesCount()).toBe(1);
   }, TIMEOUT, 2 * 1000);
-
-  peer1.presence.stop();
-  peer2.presence.stop();
-  peer3.presence.stop();
-  peer4.presence.stop();
 });

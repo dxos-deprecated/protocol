@@ -727,6 +727,15 @@
     debug "^4.1.1"
     source-map-support "^0.5.12"
 
+"@dxos/broadcast@^0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@dxos/broadcast/-/broadcast-0.0.4.tgz#e7bcb32e7fd022cc34d7c2409d438e934ccc12a0"
+  integrity sha512-KlSWOBvMdGm3xIzTXXAzzBKkGEDGIeW2MCsy2K44LiaFI494qEZSZFPqSpvOcbaXCkcQVf1oUWDks6WRSsX+4Q==
+  dependencies:
+    "@dxos/codec-protobuf" "^1.1.0-beta.2"
+    debug "^4.1.1"
+    source-map-support "^0.5.12"
+
 "@dxos/codec-protobuf@1.1.0-beta.2", "@dxos/codec-protobuf@^1.1.0-beta.0", "@dxos/codec-protobuf@^1.1.0-beta.2":
   version "1.1.0-beta.2"
   resolved "https://registry.yarnpkg.com/@dxos/codec-protobuf/-/codec-protobuf-1.1.0-beta.2.tgz#b61700c53aa4412ff0f4e524bf9e9e542d46796d"
@@ -763,6 +772,17 @@
     p-timeout "^3.2.0"
     pify "^4.0.1"
     random-access-file "^2.1.0"
+    source-map-support "^0.5.12"
+
+"@dxos/network-generator@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@dxos/network-generator/-/network-generator-0.0.3.tgz#f9b87a1899f9cf2865fe128c23beb1a2690a9633"
+  integrity sha512-RbVQkJ3/4Kpafr9qawUrSdIxs/ZwIznfz/DLxmUUi4g4OzVLsi+AST2kO6NEs6vutWxgFR2SvU95mDW4inQHZw==
+  dependencies:
+    debug "^4.1.1"
+    end-of-stream "^1.4.4"
+    ngraph.generators "^18.0.1"
+    ngraph.graph "^19.0.3"
     source-map-support "^0.5.12"
 
 "@evocateur/libnpmaccess@^3.1.2":
@@ -6246,6 +6266,11 @@ ngraph.events@1.0.0:
   resolved "https://registry.yarnpkg.com/ngraph.events/-/ngraph.events-1.0.0.tgz#260b638f1d8b1394a10ce1dda9e5d9d9c85001b1"
   integrity sha512-Z7wyywdw8IKjOW0bDiOG4FUqX5fwqW7SDMO1huemDXho7Qy1b02RoBkPS43KLIZU2wrW2orju99k8wIr+xXvVA==
 
+ngraph.events@^1.2.0:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/ngraph.events/-/ngraph.events-1.2.1.tgz#6e40425ef9dec1e074bbef6da56c8d79b9188fd8"
+  integrity sha512-D4C+nXH/RFxioGXQdHu8ELDtC6EaCiNsZtih0IvyGN81OZSUby4jXoJ5+RNWasfsd0FnKxxpAROyUMzw64QNsw==
+
 ngraph.generators@^18.0.1:
   version "18.0.1"
   resolved "https://registry.yarnpkg.com/ngraph.generators/-/ngraph.generators-18.0.1.tgz#b92be07457832f427da504414b2bb059c39cc27b"
@@ -6267,6 +6292,13 @@ ngraph.graph@^19.0.1:
   integrity sha512-4ia8RRI1BlLOp27mlolevleQLp1omhWuoUO3p/m6n5ROO6eNkPF6wSft6ZOYPjeHTAVAD40pUZffVA6WypdhUw==
   dependencies:
     ngraph.events "1.0.0"
+
+ngraph.graph@^19.0.3:
+  version "19.0.3"
+  resolved "https://registry.yarnpkg.com/ngraph.graph/-/ngraph.graph-19.0.3.tgz#d9b28c157578478526d4aa18a35a97955fcf5623"
+  integrity sha512-RCwmtHYxoWvTIREu8f37QLtbzj55r+KM9m1/Ssk+0rO4MDX6/rjBNxGZBcf/lu+HbfVz1WDc0/KQFfiZhdDnVg==
+  dependencies:
+    ngraph.events "^1.2.0"
 
 ngraph.path@^1.3.1:
   version "1.3.1"

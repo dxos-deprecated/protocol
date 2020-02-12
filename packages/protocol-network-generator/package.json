@@ -1,8 +1,8 @@
 {
-  "name": "@dxos/protocol-plugin-presence",
-  "version": "0.0.10",
-  "description": "Protocol plugin presence.",
-  "homepage": "https://github.com/dxos/protocol/tree/master/packages/protocol-plugin-presence#readme",
+  "name": "@dxos/protocol-network-generator",
+  "version": "0.0.9",
+  "description": "Protocol network generator.",
+  "homepage": "https://github.com/dxos/protocol/tree/master/packages/protocol-network-generator#readme",
   "bugs": {
     "url": "https://github.com/dxos/protocol/issues"
   },
@@ -18,9 +18,8 @@
   "main": "index.js",
   "browser": "dist/index.js",
   "scripts": {
-    "build": "npm run clean && npm run build:protobuf && npm run build:babel",
+    "build": "npm run clean && npm run build:babel",
     "build:babel": "babel ./src --out-dir ./dist --ignore \"**/*.test.js\" --source-maps",
-    "build:protobuf": "pbjs -t json src/schema.proto -o src/schema.json && cpy src/schema.json dist",
     "clean": "del-cli dist",
     "coverage": "npm test -- --coverage",
     "coveralls": "npm run coverage && cat ./coverage/lcov.info | coveralls",
@@ -36,12 +35,9 @@
     "testEnvironment": "node"
   },
   "dependencies": {
-    "@dxos/broadcast": "^0.0.4",
-    "@dxos/codec-protobuf": "1.1.0-beta.2",
-    "@dxos/protocol": "^0.0.10",
+    "@dxos/network-generator": "^0.0.3",
     "debug": "^4.1.1",
-    "ngraph.graph": "^19.0.1",
-    "queue-microtask": "^1.1.2",
+    "pump": "^3.0.0",
     "source-map-support": "^0.5.12"
   },
   "devDependencies": {
@@ -50,7 +46,7 @@
     "@babel/plugin-proposal-class-properties": "^7.7.4",
     "@babel/plugin-proposal-export-default-from": "^7.5.2",
     "@babel/preset-env": "^7.4.5",
-    "@dxos/protocol-network-generator": "^0.0.9",
+    "@dxos/protocol": "^0.0.9",
     "babel-eslint": "^10.0.2",
     "babel-jest": "^24.8.0",
     "babel-plugin-add-module-exports": "^1.0.2",
@@ -59,7 +55,6 @@
     "cpy-cli": "^2.0.0",
     "del-cli": "^3.0.0",
     "jest": "^24.5.0",
-    "ngraph.path": "^1.3.1",
     "semistandard": "^14.2.0",
     "wait-for-expect": "^3.0.1"
   },

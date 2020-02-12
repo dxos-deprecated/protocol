@@ -40,7 +40,7 @@ export class Presence extends EventEmitter {
       .build();
     this._neighbors = new Map();
 
-    this._buildNetwork();
+    this._buildGraph();
     this._buildBroadcast();
   }
 
@@ -50,11 +50,15 @@ export class Presence extends EventEmitter {
 
   get peers () {
     const list = [];
-    this.network.forEachNode((node) => {
+    this._graph.forEachNode((node) => {
       list.push(Buffer.from(node.id, 'hex'));
     });
 
     return list;
+  }
+
+  get graph () {
+    return this._graph;
   }
 
   /**
@@ -106,7 +110,7 @@ export class Presence extends EventEmitter {
 
     this._scheduler = setInterval(() => {
       this.ping();
-      queueMicrotask(() => this._pruneNetwork());
+      queueMicrotask(() => this._pruneGraph());
     }, Math.floor(this._peerTimeout / 2));
   }
 
@@ -116,16 +120,16 @@ export class Presence extends EventEmitter {
     this._scheduler = null;
   }
 
-  _buildNetwork () {
-    this.network = createGraph();
-    this.network.addNode(this._peerId.toString('hex'));
-    this.network.on('changed', (changes) => {
-      let networkUpdated = false;
+  _buildGraph () {
+    this._graph = createGraph();
+    this._graph.addNode(this._peerId.toString('hex'));
+    this._graph.on('changed', (changes) => {
+      let graphUpdated = false;
 
       changes.forEach(({ changeType, node, link }) => {
         if (changeType === 'update') return;
 
-        networkUpdated = true;
+        graphUpdated = true;
 
         const type = changeType === 'add' ? 'joined' : 'left';
 
@@ -133,9 +137,9 @@ export class Presence extends EventEmitter {
         if (link) this.emit(`connection:${type}`, Buffer.from(link.fromId, 'hex'), Buffer.from(link.toId, 'hex'));
       });
 
-      if (networkUpdated) {
-        log('network-updated', changes);
-        this.emit('network-updated', changes, this.network);
+      if (graphUpdated) {
+        log('graph-updated', changes);
+        this.emit('graph-updated', changes, this._graph);
       }
     });
   }
@@ -173,18 +177,18 @@ export class Presence extends EventEmitter {
     this._broadcast.on('lookup-error', err => console.warn(err));
     this._broadcast.on('send-error', err => console.warn(err));
     this._broadcast.on('subscribe-error', err => console.warn(err));
-    this.on('remote-ping', packet => this._updateNetwork(packet));
+    this.on('remote-ping', packet => this._updateGraph(packet));
   }
 
   _peerMessageHandler (protocol, chunk) {
     this.emit('protocol-message', protocol, chunk);
   }
 
-  _pruneNetwork () {
+  _pruneGraph () {
     const now = Date.now();
     const localPeerId = this._peerId.toString('hex');
-    this.network.beginUpdate();
-    this.network.forEachNode((node) => {
+    this._graph.beginUpdate();
+    this._graph.forEachNode((node) => {
       if (node.id === localPeerId) return;
       if (this._neighbors.has(node.id)) return;
 
@@ -192,7 +196,7 @@ export class Presence extends EventEmitter {
         this._deleteNode(node.id);
       }
     });
-    this.network.endUpdate();
+    this._graph.endUpdate();
   }
 
   /**
@@ -217,16 +221,16 @@ export class Presence extends EventEmitter {
       return;
     }
 
-    this.network.beginUpdate();
+    this._graph.beginUpdate();
 
     this._neighbors.set(peerIdHex, protocol);
-    this.network.addNode(peerIdHex, { lastUpdate: Date.now() });
+    this._graph.addNode(peerIdHex, { lastUpdate: Date.now() });
     const [source, target] = [this._peerId.toString('hex'), peerIdHex].sort();
-    if (!this.network.hasLink(source, target)) {
-      this.network.addLink(source, target);
+    if (!this._graph.hasLink(source, target)) {
+      this._graph.addLink(source, target);
     }
 
-    this.network.endUpdate();
+    this._graph.endUpdate();
 
     this.emit('neighbor:joined', peerId, protocol);
     this.ping();
@@ -253,63 +257,63 @@ export class Presence extends EventEmitter {
       return this.ping();
     }
 
-    // We clear the network graph.
+    // We clear the._graph graph.
     const localPeerId = this._peerId.toString('hex');
-    this.network.forEachNode((node) => {
+    this._graph.forEachNode((node) => {
       if (node.id === localPeerId) return;
       this._deleteNode(node.id);
     });
   }
 
-  _updateNetwork ({ peerId: from, connections = [] }) {
+  _updateGraph ({ peerId: from, connections = [] }) {
     const fromHex = from.toString('hex');
 
     const lastUpdate = Date.now();
 
-    this.network.beginUpdate();
+    this._graph.beginUpdate();
 
-    this.network.addNode(fromHex, { lastUpdate });
+    this._graph.addNode(fromHex, { lastUpdate });
 
     connections = connections.map(({ peerId }) => {
       peerId = peerId.toString('hex');
-      this.network.addNode(peerId, { lastUpdate });
+      this._graph.addNode(peerId, { lastUpdate });
       const [source, target] = [fromHex, peerId].sort();
       return { source, target };
     });
 
     connections.forEach((conn) => {
-      if (!this.network.hasLink(conn.source, conn.target)) {
-        this.network.addLink(conn.source, conn.target);
+      if (!this._graph.hasLink(conn.source, conn.target)) {
+        this._graph.addLink(conn.source, conn.target);
       }
     });
 
-    this.network.forEachLinkedNode(fromHex, (_, link) => {
+    this._graph.forEachLinkedNode(fromHex, (_, link) => {
       const toDelete = !connections.find(conn => conn.source === link.fromId && conn.target === link.toId);
 
       if (!toDelete) {
         return;
       }
 
-      this.network.removeLink(link);
+      this._graph.removeLink(link);
 
       this._deleteNodeIfEmpty(link.fromId);
       this._deleteNodeIfEmpty(link.toId);
     });
 
-    this.network.endUpdate();
+    this._graph.endUpdate();
   }
 
   _deleteNode (id) {
-    this.network.removeNode(id);
-    this.network.forEachLinkedNode(id, (_, link) => {
-      this.network.removeLink(link);
+    this._graph.removeNode(id);
+    this._graph.forEachLinkedNode(id, (_, link) => {
+      this._graph.removeLink(link);
     });
   }
 
   _deleteNodeIfEmpty (id) {
-    const links = this.network.getLinks(id) || [];
+    const links = this._graph.getLinks(id) || [];
     if (links.length === 0) {
-      this.network.removeNode(id);
+      this._graph.removeNode(id);
     }
   }
 }
