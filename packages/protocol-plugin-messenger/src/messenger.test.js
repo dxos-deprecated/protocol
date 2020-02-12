@@ -42,7 +42,12 @@ const generator = new ProtocolNetworkGenerator((topic, peerId) => {
 describe('test peer chat in a network graph of 15 peers', () => {
   test('feed synchronization', async () => {
     const topic = crypto.randomBytes(32);
-    const network = await generator.balancedBinTree(topic, 3);
+
+    const network = await generator.balancedBinTree({
+      topic,
+      parameters: [3]
+    });
+
     const { peers } = network;
     const peer1 = random(peers);
     let peer2 = random(peer1.chat.peers);

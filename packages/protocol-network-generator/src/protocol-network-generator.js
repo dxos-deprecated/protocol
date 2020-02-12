@@ -25,8 +25,8 @@ export class ProtocolNetworkGenerator {
     assert(Buffer.isBuffer(topic), 'topic is required and must be a buffer');
 
     const generator = new NetworkGenerator({
-      createPeer: id => {
-        const peer = this._createPeer(topic, id);
+      createPeer: async id => {
+        const peer = await this._createPeer(topic, id);
         assert(typeof peer === 'object', 'peer must be an object');
         assert(Buffer.isBuffer(peer.id), 'peer.id is required');
         assert(typeof peer.stream === 'function', 'peer.stream is required and must be a function');
@@ -41,7 +41,7 @@ export class ProtocolNetworkGenerator {
       }
     });
 
-    const network = generator[topology](...parameters);
+    const network = await generator[topology](...parameters);
 
     if (waitForFullConnection) {
       await Promise.all(
