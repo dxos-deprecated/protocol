@@ -154,9 +154,9 @@ export class Extension extends EventEmitter {
   /**
    * Handshake event.
    */
-  onHandshake () {
+  async onHandshake () {
     if (this._handshakeHandler) {
-      this._handshakeHandler(this._protocol);
+      await this._handshakeHandler(this._protocol);
     }
   }
 
