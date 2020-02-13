@@ -2,7 +2,7 @@
 // Copyright 2019 DxOS.
 //
 
-import crypto from 'hypercore-crypto';
+import crypto from 'crypto';
 import debug from 'debug';
 import pump from 'pump';
 
@@ -25,12 +25,12 @@ test('protocol', async () => {
     waitOneWayMessage.resolve = resolve;
   });
 
-  const { publicKey } = crypto.keyPair();
+  const topic = crypto.randomBytes(32);
 
   const protocol1 = new Protocol()
     .setSession({ user: 'user1' })
     .setExtension(new Extension(bufferExtension, { timeout }))
-    .init(publicKey);
+    .init(topic);
 
   const protocol2 = new Protocol()
     .setSession({ user: 'user2' })
@@ -61,7 +61,7 @@ test('protocol', async () => {
           }
         }
       }))
-    .init(publicKey);
+    .init(topic);
 
   protocol1.on('handshake', async (protocol) => {
     const bufferMessages = protocol.getExtension(bufferExtension);
