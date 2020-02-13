@@ -718,19 +718,10 @@
     debug "^4.1.1"
     source-map-support "^0.5.12"
 
-"@dxos/broadcast@^0.0.3":
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@dxos/broadcast/-/broadcast-0.0.3.tgz#71ead86d9a3162be3f4b121b27e0d78c979ca00a"
-  integrity sha512-oDR5dsXnS6KFf8MFjV2/6WCsVv9Hh1nwkbuH4kYsnT7tKuyyU1zExMmJBft+Ue2jgjX09EXy4DaJG1BTQVWn3w==
-  dependencies:
-    "@dxos/codec-protobuf" "^1.1.0-beta.2"
-    debug "^4.1.1"
-    source-map-support "^0.5.12"
-
-"@dxos/broadcast@^0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@dxos/broadcast/-/broadcast-0.0.4.tgz#e7bcb32e7fd022cc34d7c2409d438e934ccc12a0"
-  integrity sha512-KlSWOBvMdGm3xIzTXXAzzBKkGEDGIeW2MCsy2K44LiaFI494qEZSZFPqSpvOcbaXCkcQVf1oUWDks6WRSsX+4Q==
+"@dxos/broadcast@^1.0.0-beta.0":
+  version "1.0.0-beta.0"
+  resolved "https://registry.yarnpkg.com/@dxos/broadcast/-/broadcast-1.0.0-beta.0.tgz#a3fdb828fd927a80c0cf6d6197d34b517dbfdaba"
+  integrity sha512-T/Ab8T1bQSycyKuL13O5hzEw6ekBorZKRxXM1xRwq3V6By/fUDR/03Ns6hEURYhQdQf5hdAJoVfxSobSCod5wA==
   dependencies:
     "@dxos/codec-protobuf" "^1.1.0-beta.2"
     debug "^4.1.1"
@@ -777,10 +768,10 @@
     source-map-support "^0.5.12"
     through2 "^3.0.1"
 
-"@dxos/network-generator@^0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@dxos/network-generator/-/network-generator-0.0.6.tgz#8c9864ee9e17469e5853c8ca5df0bb118b0b9779"
-  integrity sha512-NBd6R+SnzEVp7UTji+9soBILuz1BBgd70mdPpIgXcRsjKI7lpfA9ZPFfB4K/1tQuBBLvL41yYTJmS6RvXU6X7g==
+"@dxos/network-generator@^1.0.0-beta.0":
+  version "1.0.0-beta.0"
+  resolved "https://registry.yarnpkg.com/@dxos/network-generator/-/network-generator-1.0.0-beta.0.tgz#ce256aa667d83b09056d5fbe7fb80ca1c72fcc3a"
+  integrity sha512-SeqaWxfAPOca7Shn3gIn9IhmdXaYSe77w4A0J7JjIYZxH+tjDjAe+HyjwN6rZSbuav47rssTEMPKoV3zOI9ixQ==
   dependencies:
     debug "^4.1.1"
     end-of-stream "^1.4.4"
