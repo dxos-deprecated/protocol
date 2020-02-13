@@ -42,6 +42,9 @@ export class Presence extends EventEmitter {
 
     this._buildGraph();
     this._buildBroadcast();
+    this.on('error', err => {
+      log('broadcast-error', err);
+    });
   }
 
   get peerId () {
@@ -71,7 +74,7 @@ export class Presence extends EventEmitter {
     return new Extension(Presence.EXTENSION_NAME)
       .setMessageHandler(this._peerMessageHandler.bind(this))
       .setHandshakeHandler((protocol) => {
-        log('handshake', protocol.getSession());
+        console.log('handshake', protocol.getSession());
         this._addPeer(protocol);
       })
       .setCloseHandler((err, protocol) => {
@@ -97,7 +100,7 @@ export class Presence extends EventEmitter {
       await this._broadcast.publish(this._codec.encode(message));
       log('ping', message);
     } catch (err) {
-      console.warn(err);
+      this.emit('error', err);
     }
   }
 

@@ -17,6 +17,8 @@ jest.setTimeout(10 * 1000);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 test('protocol', async () => {
+  expect.assertions(7);
+
   const bufferExtension = 'buffer';
   const timeout = 1000;
 
@@ -63,7 +65,7 @@ test('protocol', async () => {
       }))
     .init(topic);
 
-  protocol1.on('handshake', async (protocol) => {
+  protocol1.setHandshakeHandler(async (protocol) => {
     const bufferMessages = protocol.getExtension(bufferExtension);
 
     bufferMessages.on('error', (err) => {

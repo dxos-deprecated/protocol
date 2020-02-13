@@ -88,6 +88,8 @@ export class Protocol extends EventEmitter {
     this._stream = protocol(this._streamOptions);
 
     this._init = false;
+
+    this._handshakes = [];
   }
 
   toString () {
@@ -198,10 +200,7 @@ export class Protocol extends EventEmitter {
    * @returns {Protocol}
    */
   setHandshakeHandler (handler) {
-    this.once('handshake', async () => {
-      await handler(this);
-    });
-
+    this._handshakes.push(handler);
     return this;
   }
 
@@ -232,6 +231,14 @@ export class Protocol extends EventEmitter {
     // Handshake.
     this._stream.once('handshake', async () => {
       try {
+        for (const handshake of this._handshakes) {
+          if (this._stream.destroyed) {
+            return;
+          }
+
+          await handshake(this);
+        }
+
         for (const [name, extension] of this._extensionMap) {
           if (this._stream.destroyed) {
             return;
