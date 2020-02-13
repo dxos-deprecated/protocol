@@ -58,7 +58,7 @@ test('presence', async () => {
     parameters: [3]
   });
 
-  network.on('peer:deleted', peer => {
+  network.on('peer-deleted', peer => {
     log(`peer ${peer.id.toString('hex')} destroyed`);
     peer.presence.stop();
   });

@@ -774,10 +774,10 @@
     random-access-file "^2.1.0"
     source-map-support "^0.5.12"
 
-"@dxos/network-generator@^0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@dxos/network-generator/-/network-generator-0.0.5.tgz#6dba5aac763c3e422f35768bf747ffcdf4ec7b78"
-  integrity sha512-LJI7Z0FVpFOfNRALlLxCjW2T0zTJr2Wjhq9DTffeR8NkX5cOP6QA2MFHbYNgTFu4IwJkqDBL8RoaafwsbmQYMQ==
+"@dxos/network-generator@^0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@dxos/network-generator/-/network-generator-0.0.6.tgz#8c9864ee9e17469e5853c8ca5df0bb118b0b9779"
+  integrity sha512-NBd6R+SnzEVp7UTji+9soBILuz1BBgd70mdPpIgXcRsjKI7lpfA9ZPFfB4K/1tQuBBLvL41yYTJmS6RvXU6X7g==
   dependencies:
     debug "^4.1.1"
     end-of-stream "^1.4.4"

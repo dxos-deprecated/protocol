@@ -5,21 +5,20 @@
 import crypto from 'crypto';
 
 import ram from 'random-access-memory';
-import generator from 'ngraph.generators';
 import pify from 'pify';
-import pump from 'pump';
 import waitForExpect from 'wait-for-expect';
 import eos from 'end-of-stream';
 
 import { FeedStore } from '@dxos/feed-store';
 
 import { Protocol } from '@dxos/protocol';
+import { ProtocolNetworkGenerator } from '@dxos/protocol-network-generator';
 
 import { Replicator } from '.';
 
 jest.setTimeout(30000);
 
-const createNode = async (topic) => {
+const generator = new ProtocolNetworkGenerator(async (topic, peerId) => {
   const feedStore = await FeedStore.create(ram, { feedOptions: { valueEncoding: 'utf8' } });
   const feed = await feedStore.openFeed('/feed', { metadata: { topic: topic.toString('hex') } });
   const append = pify(feed.append.bind(feed));
@@ -62,11 +61,16 @@ const createNode = async (topic) => {
   const replicator = new Replicator(middleware);
 
   return {
+    id: peerId,
     getFeeds () {
       return feedStore.getOpenFeeds();
     },
-    replicate (options) {
-      return new Protocol(options)
+    stream () {
+      return new Protocol({
+        streamOptions: {
+          live: true
+        }
+      })
         .setSession({ id: 'session1' })
         .setContext({ name: 'foo' })
         .setExtensions([replicator.createExtension()])
@@ -96,74 +100,36 @@ const createNode = async (topic) => {
       return closed;
     }
   };
-};
-
-const createPeers = async (topic, graph) => {
-  const peers = [];
-  graph.forEachNode((node) => {
-    peers.push(node);
-  });
-
-  return Promise.all(peers.map(async (node) => {
-    node.data = await createNode(topic);
-    return node.data;
-  }));
-};
-
-const createConnections = (graph) => {
-  const options = {
-    streamOptions: {
-      live: true
-    }
-  };
-
-  let ic = graph.getLinksCount();
-
-  return new Promise(resolve => {
-    const connections = [];
-
-    graph.forEachLink((link) => {
-      const fromNode = graph.getNode(link.fromId).data;
-      const toNode = graph.getNode(link.toId).data;
-      const r1 = fromNode.replicate(options);
-      const r2 = toNode.replicate(options);
-      link.data = pump(r1, r2, r1);
-      link.data.on('handshake', () => {
-        ic--;
-        connections.push(link.data);
-        if (ic === 0) {
-          resolve(connections);
-        }
-      });
-    });
-  });
-};
+});
 
 describe('test data replication in a balanced network graph of 15 peers', () => {
   const topic = crypto.randomBytes(32);
-  let graph, peers, connections;
+  let network;
 
   beforeAll(async () => {
-    graph = generator.balancedBinTree(3);
-    peers = await createPeers(topic, graph);
-    connections = await createConnections(graph);
+    network = await generator.balancedBinTree({
+      topic,
+      parameters: [1]
+    });
   });
 
   test('feed synchronization', async () => {
     await waitForExpect(() => {
-      graph.forEachNode((node) => {
-        expect(node.data.getFeeds().length).toBe(graph.getNodesCount());
-      });
+      const result = network.peers.reduce((prev, peer) => {
+        return prev && peer.getFeeds().length === network.peers.length;
+      }, true);
+
+      expect(result).toBe(true);
     }, 4500, 1000);
   });
 
   test('message synchronization', async () => {
     const messages = [];
     const wait = [];
-    graph.forEachNode((node) => {
-      const msg = `${node.id}:foo`;
+    network.peers.forEach((peer) => {
+      const msg = `${peer.id.toString('hex')}:foo`;
       messages.push(msg);
-      wait.push(node.data.append(msg));
+      wait.push(peer.append(msg));
     });
     messages.sort();
 
@@ -171,19 +137,19 @@ describe('test data replication in a balanced network graph of 15 peers', () => 
 
     await waitForExpect(async () => {
       const results = [];
-      graph.forEachNode((node) => {
-        results.push(node.data.getMessages());
+      network.peers.forEach((peer) => {
+        results.push(peer.getMessages());
       });
       for await (const nodeMessages of results) {
         expect(nodeMessages).toEqual(messages);
       }
     }, 15 * 1000, 5 * 1000);
 
-    connections.forEach(c => c.destroy());
+    const end = network.destroy();
 
     await waitForExpect(() => {
       let closed = true;
-      for (const peer of peers) {
+      for (const peer of network.peers) {
         closed = closed && peer.isClosed();
         if (!closed) {
           break;
@@ -191,5 +157,7 @@ describe('test data replication in a balanced network graph of 15 peers', () => 
       }
       expect(closed).toBe(true);
     });
+
+    await end;
   });
 });
