@@ -785,6 +785,21 @@
     ngraph.graph "^19.0.3"
     source-map-support "^0.5.12"
 
+"@dxos/protocol@^0.0.9":
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/@dxos/protocol/-/protocol-0.0.9.tgz#39bbf98c19987a856fcdf1c91dd7b7e1a3d06f12"
+  integrity sha512-qJXh8ESD0oL4hfG7kv1KCuKRnv0CPgz246Q0vzW90wtombVtXtuQtND7bH1TwCuYc0327NaFF2qZ8FctJrivwg==
+  dependencies:
+    "@dxos/broadcast" "^0.0.1"
+    "@dxos/codec-protobuf" "^1.1.0-beta.2"
+    assert "^2.0.0"
+    buffer-json-encoding "^1.0.2"
+    debug "^4.1.1"
+    end-of-stream "^1.4.1"
+    humanhash "^1.0.4"
+    hypercore-protocol "^6.11.1"
+    source-map-support "^0.5.12"
+
 "@evocateur/libnpmaccess@^3.1.2":
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/@evocateur/libnpmaccess/-/libnpmaccess-3.1.2.tgz#ecf7f6ce6b004e9f942b098d92200be4a4b1c845"
