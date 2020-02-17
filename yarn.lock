@@ -768,10 +768,10 @@
     source-map-support "^0.5.12"
     through2 "^3.0.1"
 
-"@dxos/network-generator@^1.0.0-beta.0":
-  version "1.0.0-beta.0"
-  resolved "https://registry.yarnpkg.com/@dxos/network-generator/-/network-generator-1.0.0-beta.0.tgz#ce256aa667d83b09056d5fbe7fb80ca1c72fcc3a"
-  integrity sha512-SeqaWxfAPOca7Shn3gIn9IhmdXaYSe77w4A0J7JjIYZxH+tjDjAe+HyjwN6rZSbuav47rssTEMPKoV3zOI9ixQ==
+"@dxos/network-generator@^1.0.0-beta.1":
+  version "1.0.0-beta.1"
+  resolved "https://registry.yarnpkg.com/@dxos/network-generator/-/network-generator-1.0.0-beta.1.tgz#3cdc2cb9c5ea448f2c96bb8bffab87075f00f108"
+  integrity sha512-JCDTuEqmzDuNDR1zlw2weTJFqwwKSGdJKRyXFZ3MoEq/m1lLwUS5p7NWerXLpOT9VtYfJoZlX1Q8ggQaUgFU2Q==
   dependencies:
     debug "^4.1.1"
     end-of-stream "^1.4.4"

@@ -22,6 +22,8 @@ test('basic generator', async () => {
     };
   });
 
+  generator.on('error', err => console.log(err));
+
   const network = await generator.grid({
     topic: crypto.randomBytes(32),
     parameters: [10, 10]

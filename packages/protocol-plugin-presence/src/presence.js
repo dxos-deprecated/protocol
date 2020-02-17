@@ -74,7 +74,6 @@ export class Presence extends EventEmitter {
     return new Extension(Presence.EXTENSION_NAME)
       .setMessageHandler(this._peerMessageHandler.bind(this))
       .setHandshakeHandler((protocol) => {
-        console.log('handshake', protocol.getSession());
         this._addPeer(protocol);
       })
       .setCloseHandler((err, protocol) => {

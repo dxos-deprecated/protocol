@@ -3,6 +3,7 @@
 //
 
 import assert from 'assert';
+import { EventEmitter } from 'events';
 
 import pump from 'pump';
 
@@ -23,13 +24,15 @@ import { NetworkGenerator, topologies } from '@dxos/network-generator';
 
 const isStream = stream => typeof stream === 'object' && typeof stream.pipe === 'function';
 
-export class ProtocolNetworkGenerator {
+export class ProtocolNetworkGenerator extends EventEmitter {
   /**
    * @constructor
    *
    * @param {CreatePeerCallback} createPeer
    */
   constructor (createPeer) {
+    super();
+
     assert(typeof createPeer === 'function', 'createPeer is required and must be a function');
     this._createPeer = (...args) => createPeer(...args);
     topologies.forEach(topology => {
@@ -70,6 +73,8 @@ export class ProtocolNetworkGenerator {
         return pump(r1, r2, r1);
       }
     });
+
+    generator.on('error', err => this.emit('error', err));
 
     const network = await generator[topology](...parameters);
 
