@@ -718,6 +718,15 @@
     debug "^4.1.1"
     source-map-support "^0.5.12"
 
+"@dxos/broadcast@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@dxos/broadcast/-/broadcast-0.0.3.tgz#71ead86d9a3162be3f4b121b27e0d78c979ca00a"
+  integrity sha512-oDR5dsXnS6KFf8MFjV2/6WCsVv9Hh1nwkbuH4kYsnT7tKuyyU1zExMmJBft+Ue2jgjX09EXy4DaJG1BTQVWn3w==
+  dependencies:
+    "@dxos/codec-protobuf" "^1.1.0-beta.2"
+    debug "^4.1.1"
+    source-map-support "^0.5.12"
+
 "@dxos/broadcast@^1.0.0-beta.0":
   version "1.0.0-beta.0"
   resolved "https://registry.yarnpkg.com/@dxos/broadcast/-/broadcast-1.0.0-beta.0.tgz#a3fdb828fd927a80c0cf6d6197d34b517dbfdaba"
@@ -737,7 +746,7 @@
     protobufjs "https://github.com/protobufjs/protobuf.js"
     source-map-support "^0.5.12"
 
-"@dxos/codec-protobuf@^1.1.0-beta.9":
+"@dxos/codec-protobuf@^1.1.0-beta.7", "@dxos/codec-protobuf@^1.1.0-beta.9":
   version "1.1.0-beta.9"
   resolved "https://registry.yarnpkg.com/@dxos/codec-protobuf/-/codec-protobuf-1.1.0-beta.9.tgz#7bd9dba4c0463f3469e76b9bcb0ba2c30f5e1f8a"
   integrity sha512-NDBzJrS1sAaHJvCEMuO7BA4LR+UYnkkTHu6Pi+ILuZQzr4Jj/wadFRxCP36Dj/j6gVd0G4n7wIJy0BxewLOQgQ==
@@ -746,6 +755,33 @@
     buffer "^5.4.3"
     lodash.merge "^4.6.2"
     protobufjs "https://github.com/protobufjs/protobuf.js"
+    source-map-support "^0.5.12"
+
+"@dxos/crypto@^1.0.0-beta.0":
+  version "1.0.0-beta.0"
+  resolved "https://registry.yarnpkg.com/@dxos/crypto/-/crypto-1.0.0-beta.0.tgz#33509fd1025d28061b28de1647543c9cbbea50c1"
+  integrity sha512-kw1yHIZbvwsLAVYhpQ8PolCY1aisNLLmJmmCrHsNeykyJGwC7nwYic5WuHYqWTTwGgtlcrn4hiMY1eCvS4Pbfg==
+  dependencies:
+    crypto-js "^3.1.9-1"
+    humanhash "^1.0.4"
+    hypercore-crypto "^1.0.0"
+
+"@dxos/feed-store@1.2.0-beta.2":
+  version "1.2.0-beta.2"
+  resolved "https://registry.yarnpkg.com/@dxos/feed-store/-/feed-store-1.2.0-beta.2.tgz#4346a0ef1581e42d2ebce1ee611e3d6379a7f70c"
+  integrity sha512-sIrqE5CyIYQCu49bqzTY7NIgzcAV9P0PCALbYJkX4M2mb0ac/+19UJrsTNTsOS7IQpw13UQf4H2PAfolTR/UWQ==
+  dependencies:
+    buffer-json-encoding "^1.0.2"
+    debug "^4.1.1"
+    end-of-stream "^1.4.4"
+    hypercore "^7.7.1"
+    hypercore-crypto "^1.0.0"
+    hypertrie "^3.8.0"
+    multi-read-stream "^2.0.0"
+    mutexify "^1.2.0"
+    p-timeout "^3.2.0"
+    pify "^4.0.1"
+    random-access-file "^2.1.0"
     source-map-support "^0.5.12"
 
 "@dxos/feed-store@^1.2.0-beta.10":
@@ -3077,6 +3113,11 @@ cross-spawn@^7.0.0:
     path-key "^3.1.0"
     shebang-command "^2.0.0"
     which "^2.0.1"
+
+crypto-js@^3.1.9-1:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/crypto-js/-/crypto-js-3.3.0.tgz#846dd1cce2f68aacfa156c8578f926a609b7976b"
+  integrity sha512-DIT51nX0dCfKltpRiXV+/TVZq+Qq2NgF4644+K7Ttnla7zEzqc+kjJyiB96BHNyUTBxyjzRcZYpUdZa+QAqi6Q==
 
 cssom@0.3.x, "cssom@>= 0.3.2 < 0.4.0":
   version "0.3.8"
