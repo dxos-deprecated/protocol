@@ -1,0 +1,107 @@
+{
+  "nested": {
+    "dxos": {
+      "nested": {
+        "protocol": {
+          "nested": {
+            "bot": {
+              "nested": {
+                "Message": {
+                  "fields": {
+                    "message": {
+                      "type": "google.protobuf.Any",
+                      "id": 1
+                    }
+                  }
+                },
+                "Spawn": {
+                  "fields": {
+                    "botId": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "topic": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "modelOptions": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "invitation": {
+                      "type": "string",
+                      "id": 4
+                    }
+                  }
+                },
+                "GetStatus": {
+                  "fields": {
+                    "options": {
+                      "type": "google.protobuf.Any",
+                      "id": 1
+                    }
+                  }
+                },
+                "Status": {
+                  "fields": {
+                    "version": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "uptime": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "bots": {
+                      "rule": "repeated",
+                      "type": "Bot",
+                      "id": 10
+                    }
+                  },
+                  "nested": {
+                    "Bot": {
+                      "fields": {
+                        "type": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "spec": {
+                          "type": "string",
+                          "id": 2
+                        },
+                        "party": {
+                          "type": "string",
+                          "id": 3
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "google": {
+      "nested": {
+        "protobuf": {
+          "nested": {
+            "Any": {
+              "fields": {
+                "type_url": {
+                  "type": "string",
+                  "id": 1
+                },
+                "value": {
+                  "type": "bytes",
+                  "id": 2
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

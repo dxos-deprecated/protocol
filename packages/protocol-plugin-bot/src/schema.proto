@@ -1,0 +1,49 @@
+//
+// Copyright 2020 DxOS.
+//
+
+syntax = "proto3";
+
+package dxos.protocol.bot;
+
+import "google/protobuf/any.proto";
+
+message Message {
+  google.protobuf.Any message = 1;
+}
+
+// Command to spawn a bot.
+message Spawn {
+  // Bot WRN (e.g. wrn:bot:wireline.io/chess).
+  string bot_id = 1;
+
+  // Topic the bot should swarm on to connect to peers (e.g. cd719a79f016e7de5250784e6db684d46589c3731a91a313810dc236bc8d8fe9).
+  string topic = 2;
+
+  // Options used to create the model (e.g. '{"type":"testing.item.Task","listId":"list-tasks"}').
+  // TODO(egorgripasov): Move to typed sub message.
+  string model_options = 3;
+
+  // Invitation for the case of credentials usage.
+  string invitation = 4;
+}
+
+// Command to obtain BotFactory status.
+message GetStatus {
+  // Any options (not used yet).
+  google.protobuf.Any options = 1;
+}
+
+message Status {
+
+  message Bot {
+    string type = 1;
+    string spec = 2;
+    string party = 3;
+  }
+
+  string version = 1;
+  string uptime = 2;
+  // Running bots.
+  repeated Bot bots = 10;
+}
