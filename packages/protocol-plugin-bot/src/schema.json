@@ -72,6 +72,10 @@
                         "party": {
                           "type": "string",
                           "id": 3
+                        },
+                        "started": {
+                          "type": "string",
+                          "id": 4
                         }
                       }
                     }
