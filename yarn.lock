@@ -757,10 +757,10 @@
     protobufjs "https://github.com/protobufjs/protobuf.js"
     source-map-support "^0.5.12"
 
-"@dxos/crypto@^1.0.0-beta.0":
-  version "1.0.0-beta.0"
-  resolved "https://registry.yarnpkg.com/@dxos/crypto/-/crypto-1.0.0-beta.0.tgz#33509fd1025d28061b28de1647543c9cbbea50c1"
-  integrity sha512-kw1yHIZbvwsLAVYhpQ8PolCY1aisNLLmJmmCrHsNeykyJGwC7nwYic5WuHYqWTTwGgtlcrn4hiMY1eCvS4Pbfg==
+"@dxos/crypto@^1.0.0-beta.1":
+  version "1.0.0-beta.1"
+  resolved "https://registry.yarnpkg.com/@dxos/crypto/-/crypto-1.0.0-beta.1.tgz#ada31ebe397efe4d9e4289f4c716654cb0dcff32"
+  integrity sha512-M9wBpcbiXQ5yyrOzu9mBalWGkth/fRCZV1q0P+eGHyqFhK8Y/32cr4GsD5BxdWOuwV/luVZM/omwgqXVeFZlfw==
   dependencies:
     crypto-js "^3.1.9-1"
     humanhash "^1.0.4"
