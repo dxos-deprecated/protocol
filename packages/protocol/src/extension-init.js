@@ -18,20 +18,20 @@ export class ExtensionInit extends Extension {
       const { data } = message;
 
       switch (data.toString()) {
-        case 'valid': {
+        case 'continue': {
           this._remoteInit = true;
           this._remoteSignal.notify();
           return;
         }
 
-        case 'invalid': {
+        case 'break': {
           this._remoteInit = false;
           this._remoteSignal.notify();
           return;
         }
 
         case 'destroy': {
-          process.nextTick(() => protocol.stream.destroy(new Error('invalid peer')));
+          process.nextTick(() => protocol.stream.destroy(new Error('protocol closed')));
         }
       }
     });
@@ -42,9 +42,9 @@ export class ExtensionInit extends Extension {
     });
   }
 
-  async validate () {
+  async continue () {
     try {
-      await this.send(Buffer.from('valid'));
+      await this.send(Buffer.from('continue'));
       if (this._remoteInit !== null) {
         return this._remoteInit;
       } else {
@@ -56,11 +56,11 @@ export class ExtensionInit extends Extension {
     }
   }
 
-  async invalidate () {
+  async break () {
     try {
-      if (this._remoteInit !== null) return;
+      if (this._remoteInit === false) return;
 
-      await this.send(Buffer.from('invalid'));
+      await this.send(Buffer.from('break'));
       this.send(Buffer.from('destroy'), { oneway: true });
     } catch (err) {}
   }

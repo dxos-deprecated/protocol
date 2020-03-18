@@ -227,7 +227,7 @@ export class Protocol extends EventEmitter {
           await extension.onInit();
         }
 
-        if (!(await this._extensionInit.validate())) {
+        if (!(await this._extensionInit.continue())) {
           throw new Error('invalid init protocol');
         }
 
@@ -255,7 +255,7 @@ export class Protocol extends EventEmitter {
         log(`handshake: ${keyToHuman(this._stream.id)} <=> ${keyToHuman(this._stream.remoteId)}`);
         this.emit('handshake', this);
       } catch (err) {
-        this._extensionInit.invalidate()
+        this._extensionInit.break()
           .finally(() => {
             process.nextTick(() => this._stream.destroy(err));
             err.code = 'ERR_ON_HANDSHAKE';
