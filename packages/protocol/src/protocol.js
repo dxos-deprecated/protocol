@@ -10,32 +10,10 @@ import protocol from 'hypercore-protocol';
 import eos from 'end-of-stream';
 import bufferJson from 'buffer-json-encoding';
 
+import { ExtensionInit } from './extension-init';
 import { keyToHuman } from './utils';
 
 const log = debug('dxos:protocol');
-
-/**
- * Protocol error with HTTP-like codes.
- * https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
- */
-export class ProtocolError extends Error {
-  constructor (code, message) {
-    super(message);
-    this.code = code;
-    this.name = this.constructor.name;
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, this.constructor);
-    } else {
-      this.stack = (new Error(message)).stack;
-    }
-  }
-
-  toString () {
-    const parts = [this.code];
-    if (this.message) { parts.push(this.message); }
-    return `ProtocolError(${parts.join(', ')})`;
-  }
-}
 
 /**
  * Wraps a hypercore-protocol object.
@@ -79,17 +57,23 @@ export class Protocol extends EventEmitter {
   constructor (options = {}) {
     super();
 
-    const { discoveryToPublicKey = key => key, streamOptions } = options;
+    const { discoveryToPublicKey = key => key, streamOptions, initTimeout = 5 * 1000 } = options;
 
     this._discoveryToPublicKey = discoveryToPublicKey;
 
     this._streamOptions = streamOptions;
 
+    this._initTimeout = initTimeout;
+
     this._stream = protocol(this._streamOptions);
 
     this._init = false;
+    this._handshakeValidated = false;
 
     this._handshakes = [];
+    this.on('error', error => {
+      log(error);
+    });
   }
 
   toString () {
@@ -217,8 +201,11 @@ export class Protocol extends EventEmitter {
 
     this._init = true;
 
+    this._extensionInit = new ExtensionInit({ timeout: this._initTimeout });
+    this._extensionInit.init(this);
+
     // Initialize extensions.
-    const sortedExtensions = [];
+    const sortedExtensions = [this._extensionInit.name];
     this._extensionMap.forEach(extension => {
       sortedExtensions.push(extension.name);
       extension.init(this);
@@ -231,6 +218,19 @@ export class Protocol extends EventEmitter {
     // Handshake.
     this._stream.once('handshake', async () => {
       try {
+        for (const [name, extension] of this._extensionMap) {
+          if (this._stream.destroyed) {
+            return;
+          }
+
+          log(`init extension "${name}": ${keyToHuman(this._stream.id)} <=> ${keyToHuman(this._stream.remoteId)}`);
+          await extension.onInit();
+        }
+
+        if (!(await this._extensionInit.continue())) {
+          throw new Error('invalid init protocol');
+        }
+
         for (const handshake of this._handshakes) {
           if (this._stream.destroyed) {
             return;
@@ -255,8 +255,13 @@ export class Protocol extends EventEmitter {
         log(`handshake: ${keyToHuman(this._stream.id)} <=> ${keyToHuman(this._stream.remoteId)}`);
         this.emit('handshake', this);
       } catch (err) {
-        this._stream.destroy();
-        console.warn(err);
+        this._extensionInit.break()
+          .finally(() => {
+            process.nextTick(() => this._stream.destroy(err));
+            err.code = 'ERR_ON_HANDSHAKE';
+            this.emit('error', err);
+          });
+        return;
       }
 
       this._stream.on('feed', (discoveryKey) => {
@@ -265,7 +270,8 @@ export class Protocol extends EventEmitter {
             extension.onFeed(discoveryKey);
           });
         } catch (err) {
-          console.warn(err);
+          err.code = 'ERR_ON_FEED';
+          this.emit('error', err);
         }
       });
     });
@@ -277,9 +283,9 @@ export class Protocol extends EventEmitter {
     if (discoveryKey) {
       initialKey = this._discoveryToPublicKey(discoveryKey);
       if (!initialKey) {
-        // Continuing onward to initialize the stream without a key will fail, but the error thrown then
-        // is as apt as any we would construct and throw here, so we simply report the condition.
-        console.error('init - Public key not found for discovery key: ', keyToHuman(this._stream.id, 'node'), keyToHuman(discoveryKey));
+        this.emit('error',
+          new Error(`init:stream:feed - Public key not found for discovery key: ${keyToHuman(this._stream.id, 'node')} ${keyToHuman(discoveryKey)}`)
+        );
       }
       this._initStream(initialKey);
     } else {
@@ -289,13 +295,14 @@ export class Protocol extends EventEmitter {
 
         if (!initialKey) {
           // Stream will get aborted soon as both sides haven't shared the same initial Dat feed.
-          console.warn('init:stream:feed - Public key not found for discovery key: ', keyToHuman(this._stream.id, 'node'), keyToHuman(discoveryKey));
+          this.emit('error',
+            new Error(`init:stream:feed - Public key not found for discovery key: ${keyToHuman(this._stream.id, 'node')} ${keyToHuman(discoveryKey)}`)
+          );
 
           return;
         }
 
         if (this._feed) {
-          console.warn('Protocol already initialized.');
           return;
         }
 
@@ -304,6 +311,7 @@ export class Protocol extends EventEmitter {
     }
 
     eos(this._stream, (err) => {
+      this._extensionInit.onClose();
       this._extensionMap.forEach((extension) => {
         extension.onClose(err);
       });
@@ -328,10 +336,13 @@ export class Protocol extends EventEmitter {
    * Handles extension messages.
    */
   _extensionHandler = async (name, message) => {
+    if (name === this._extensionInit.name) {
+      return this._extensionInit.onMessage(message);
+    }
+
     const extension = this._extensionMap.get(name);
     if (!extension) {
-      console.warn(`Missing extension: ${name}`);
-      this.emit('error');
+      this.emit('error', new Error(`Missing extension: ${name}`));
       return;
     }
 

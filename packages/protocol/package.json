@@ -44,6 +44,7 @@
     "end-of-stream": "^1.4.1",
     "humanhash": "^1.0.4",
     "hypercore-protocol": "^6.11.1",
+    "signal-promise": "^1.0.3",
     "source-map-support": "^0.5.12"
   },
   "devDependencies": {

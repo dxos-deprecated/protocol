@@ -6,11 +6,12 @@ import assert from 'assert';
 import crypto from 'crypto';
 import debug from 'debug';
 import { EventEmitter } from 'events';
+import eos from 'end-of-stream';
 
 import { Codec } from '@dxos/codec-protobuf';
 
 import { keyToHuman } from './utils';
-import { ProtocolError } from './protocol';
+import { ProtocolError } from './protocol-error';
 import schema from './schema.json';
 
 const log = debug('dxos:protocol:extension');
@@ -95,6 +96,11 @@ export class Extension extends EventEmitter {
     return this._stats;
   }
 
+  setInitHandler (initHandler) {
+    this._initHandler = initHandler;
+    return this;
+  }
+
   /**
    * Sets the handshake handler.
    * @param {Function<{protocol}>} handshakeHandler - Async handshake handler.
@@ -149,6 +155,18 @@ export class Extension extends EventEmitter {
     log(`init[${this._name}]: ${keyToHuman(protocol.id)}`);
 
     this._protocol = protocol;
+    eos(this._protocol.stream, () => {
+      this._pendingMessages.forEach(callback => {
+        callback(new Error('protocol closed'));
+      });
+      this._pendingMessages.clear();
+    });
+  }
+
+  async onInit () {
+    if (this._initHandler) {
+      await this._initHandler(this._protocol);
+    }
   }
 
   /**
@@ -183,7 +201,7 @@ export class Extension extends EventEmitter {
     const senderCallback = this._pendingMessages.get(idHex);
     if (senderCallback) {
       this._pendingMessages.delete(idHex);
-      senderCallback(requestData, error);
+      senderCallback(error, requestData);
       return;
     }
 
@@ -239,6 +257,8 @@ export class Extension extends EventEmitter {
    * @returns {Promise<Object>} Response from peer.
    */
   async send (message, options = {}) {
+    if (this._protocol.stream.destroyed) throw new Error('protocol closed');
+
     assert(typeof message === 'object' || Buffer.isBuffer(message));
 
     const { oneway = false } = options;
@@ -262,7 +282,7 @@ export class Extension extends EventEmitter {
     const promise = {};
 
     // Set the callback to be called when the response is received.
-    this._pendingMessages.set(request.id.toString('hex'), async (response, error) => {
+    this._pendingMessages.set(request.id.toString('hex'), async (error, response) => {
       log(`Response ${keyToHuman(this._protocol.stream.id, 'node')}: ${keyToHuman(request.id, 'msg')}`);
       this._stats.receive++;
       this.emit('receive', this._stats);
@@ -273,7 +293,7 @@ export class Extension extends EventEmitter {
       }
 
       if (promise.expired) {
-        this.emit('error', new ProtocolError('ERR_REQUEST_TIMEOUT'));
+        promise.reject(new ProtocolError('ERR_REQUEST_TIMEOUT'));
         return;
       }
 

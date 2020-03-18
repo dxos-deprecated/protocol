@@ -16,8 +16,8 @@ jest.setTimeout(10 * 1000);
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-test('protocol', async () => {
-  expect.assertions(7);
+test('basic', async () => {
+  expect.assertions(9);
 
   const bufferExtension = 'buffer';
   const timeout = 1000;
@@ -28,15 +28,28 @@ test('protocol', async () => {
   });
 
   const topic = crypto.randomBytes(32);
+  const onInit = jest.fn();
 
   const protocol1 = new Protocol()
     .setSession({ user: 'user1' })
-    .setExtension(new Extension(bufferExtension, { timeout }))
+    .setExtension(
+      new Extension(bufferExtension, { timeout })
+        .setInitHandler(() => {
+          onInit();
+        })
+    )
     .init(topic);
 
   const protocol2 = new Protocol()
     .setSession({ user: 'user2' })
+    .setHandshakeHandler(() => {
+      expect(onInit).toHaveBeenCalledTimes(2);
+    })
     .setExtension(new Extension(bufferExtension, { timeout })
+      .setInitHandler(async (protocol) => {
+        await sleep(2 * 1000);
+        onInit();
+      })
       .setMessageHandler(async (protocol, message, options) => {
         const { data } = message;
 
@@ -66,6 +79,8 @@ test('protocol', async () => {
     .init(topic);
 
   protocol1.setHandshakeHandler(async (protocol) => {
+    expect(onInit).toHaveBeenCalledTimes(2);
+
     const bufferMessages = protocol.getExtension(bufferExtension);
 
     bufferMessages.on('error', (err) => {
@@ -106,6 +121,44 @@ test('protocol', async () => {
   });
 
   return new Promise(resolve => pump(protocol1.stream, protocol2.stream, protocol1.stream, () => {
+    resolve();
+  }));
+});
+
+test('protocol init error', async () => {
+  expect.assertions(1);
+
+  const bufferExtension = 'buffer';
+
+  const waitOneWayMessage = {};
+  waitOneWayMessage.promise = new Promise((resolve) => {
+    waitOneWayMessage.resolve = resolve;
+  });
+
+  const topic = crypto.randomBytes(32);
+  const onHandshake = jest.fn();
+
+  const protocol = (name, error) => new Protocol()
+    .setContext({ name })
+    .setHandshakeHandler(() => {
+      onHandshake();
+    })
+    .setExtension(
+      new Extension(bufferExtension)
+        .setInitHandler(async () => {
+          if (error) {
+            await sleep(5 * 100);
+            throw error;
+          }
+        })
+    )
+    .init(topic);
+
+  const protocol1 = protocol('protocol1');
+  const protocol2 = protocol('protocol2', new Error('big error'));
+
+  return new Promise(resolve => pump(protocol1.stream, protocol2.stream, protocol1.stream, () => {
+    expect(onHandshake).not.toHaveBeenCalled();
     resolve();
   }));
 });

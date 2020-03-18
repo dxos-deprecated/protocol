@@ -62,10 +62,19 @@ export class Replicator extends EventEmitter {
       timeout: this._options.timeout
     })
       .on('error', err => this.emit(err))
+      .setInitHandler(this._initHandler.bind(this))
       .setHandshakeHandler(this._handshakeHandler.bind(this))
       .setMessageHandler(this._messageHandler.bind(this))
       .setCloseHandler(this._closeHandler.bind(this))
       .setFeedHandler(this._feedHandler.bind(this));
+  }
+
+  async _initHandler (protocol) {
+    const extension = protocol.getExtension(Replicator.extension);
+
+    const peer = new Peer(protocol, extension);
+
+    this._peers.set(protocol, peer);
   }
 
   /**
@@ -75,11 +84,7 @@ export class Replicator extends EventEmitter {
    * @returns {Promise<void>}
    */
   async _handshakeHandler (protocol) {
-    const extension = protocol.getExtension(Replicator.extension);
-
-    const peer = new Peer(protocol, extension);
-
-    this._peers.set(protocol, peer);
+    const peer = this._peers.get(protocol);
 
     const context = protocol.getContext();
     const session = protocol.getSession();
