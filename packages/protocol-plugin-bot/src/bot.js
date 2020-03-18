@@ -154,10 +154,10 @@ export class BotPlugin extends EventEmitter {
     this._broadcast.run();
 
     return new Extension(BotPlugin.EXTENSION_NAME)
-      .setMessageHandler(this._commandHandler)
-      .setHandshakeHandler((protocol) => {
+      .setInitHandler((protocol) => {
         this._addPeer(protocol);
       })
+      .setMessageHandler(this._commandHandler)
       .setCloseHandler((err, protocol) => {
         // This errors can happen all the time without been an issue.
         const protocolErrors = ['Remote timed out', 'premature close'];

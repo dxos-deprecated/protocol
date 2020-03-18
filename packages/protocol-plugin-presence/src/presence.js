@@ -72,10 +72,10 @@ export class Presence extends EventEmitter {
     this.start();
 
     return new Extension(Presence.EXTENSION_NAME)
-      .setMessageHandler(this._peerMessageHandler.bind(this))
-      .setHandshakeHandler((protocol) => {
+      .setInitHandler((protocol) => {
         this._addPeer(protocol);
       })
+      .setMessageHandler(this._peerMessageHandler.bind(this))
       .setCloseHandler((err, protocol) => {
         // This errors can happen all the time without been an issue.
         const protocolErrors = ['Remote timed out', 'premature close'];
