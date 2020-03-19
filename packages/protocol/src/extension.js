@@ -3,16 +3,21 @@
 //
 
 import assert from 'assert';
-import crypto from 'crypto';
 import debug from 'debug';
-import { EventEmitter } from 'events';
 import eos from 'end-of-stream';
+import { Nanomessage } from 'nanomessage';
 
 import { Codec } from '@dxos/codec-protobuf';
 
 import { keyToHuman } from './utils';
-import { ProtocolError } from './protocol-error';
 import schema from './schema.json';
+import {
+  ERR_PROTOCOL_STREAM_CLOSED,
+  ERR_EXTENSION_INIT_FAILED,
+  ERR_EXTENSION_HANDSHAKE_FAILED,
+  ERR_EXTENSION_FEED_FAILED,
+  ERR_EXTENSION_CLOSE_FAILED
+} from './errors';
 
 const log = debug('dxos:protocol:extension');
 
@@ -21,17 +26,11 @@ const log = debug('dxos:protocol:extension');
  *
  * Events: "send", "receive", "error"
  */
-export class Extension extends EventEmitter {
+export class Extension extends Nanomessage {
   /**
    * @type {Protocol}
    */
   _protocol = null;
-
-  /**
-   * Pending messages.
-   * @type {Map<{id, Function}>}
-   */
-  _pendingMessages = new Map();
 
   /**
    * Handshake handler.
@@ -57,43 +56,30 @@ export class Extension extends EventEmitter {
    */
   _feedHandler = null;
 
-  _stats = {
-    send: 0,
-    receive: 0,
-    error: 0
-  };
-
   /**
    * @param {string} name
    * @param {Object} options
    * @param {Number} options.timeout
    */
   constructor (name, options = {}) {
-    super();
     assert(typeof name === 'string' && name.length > 0, 'name is required.');
+
+    super(options);
 
     this._name = name;
 
-    this._options = Object.assign({
-      timeout: 2000
-    }, options);
-
-    this._codec = new Codec('dxos.protocol.Message')
+    this.codec = new Codec('dxos.protocol.Message')
       .addJson(JSON.parse(schema));
 
-    if (this._options.schema) {
-      this._codec.addJson(this._options.schema);
+    if (options.schema) {
+      this.codec.addJson(options.schema);
     }
 
-    this._codec.build();
+    this.codec.build();
   }
 
   get name () {
     return this._name;
-  }
-
-  get stats () {
-    return this._stats;
   }
 
   setInitHandler (initHandler) {
@@ -150,22 +136,23 @@ export class Extension extends EventEmitter {
    *
    * @param {Protocol} protocol
    */
-  init (protocol) {
+  async openWithProtocol (protocol) {
     assert(!this._protocol);
     log(`init[${this._name}]: ${keyToHuman(protocol.id)}`);
 
     this._protocol = protocol;
-    eos(this._protocol.stream, () => {
-      this._pendingMessages.forEach(callback => {
-        callback(new Error('protocol closed'));
-      });
-      this._pendingMessages.clear();
-    });
+
+    await this.open();
   }
 
   async onInit () {
-    if (this._initHandler) {
-      await this._initHandler(this._protocol);
+    try {
+      await this.open();
+      if (this._initHandler) {
+        await this._initHandler(this._protocol);
+      }
+    } catch (err) {
+      throw new ERR_EXTENSION_INIT_FAILED(err.message);
     }
   }
 
@@ -173,68 +160,13 @@ export class Extension extends EventEmitter {
    * Handshake event.
    */
   async onHandshake () {
-    if (this._handshakeHandler) {
-      await this._handshakeHandler(this._protocol);
-    }
-  }
-
-  /**
-   * Close event.
-   */
-  onClose (error) {
-    if (this._closeHandler) {
-      this._closeHandler(error, this._protocol);
-    }
-  }
-
-  /**
-   * Receives extension message.
-   *
-   * @param {Buffer} message
-   */
-  async onMessage (message) {
-    const { id, error, data: requestData, options = {} } = this._codec.decode(message);
-
-    // Check for a pending request.
-    const idHex = id.toString('hex');
-
-    const senderCallback = this._pendingMessages.get(idHex);
-    if (senderCallback) {
-      this._pendingMessages.delete(idHex);
-      senderCallback(error, requestData);
-      return;
-    }
-
-    if (!this._messageHandler) {
-      console.warn('No message handler.');
-      this.emit('error', new ProtocolError('ERR_SYSTEM', 'No message handler'));
-      return;
-    }
-
     try {
-      // Process the message.
-      log(`Received ${keyToHuman(this._protocol.stream.id, 'node')}: ${keyToHuman(id, 'msg')}`);
-      let responseData = await this._messageHandler(this._protocol, requestData, options);
-      responseData = Buffer.isBuffer(responseData) ? { __type_url: 'Buffer', data: responseData } : responseData;
-
-      if (options.oneway) {
-        return;
+      await this.open();
+      if (this._handshakeHandler) {
+        await this._handshakeHandler(this._protocol);
       }
-
-      // Send the response.
-      const response = { id, data: responseData };
-      log(`Responding ${keyToHuman(this._protocol.stream.id, 'node')}: ${keyToHuman(id, 'msg')}`);
-      this._protocol.feed.extension(this._name, this._codec.encode(response));
     } catch (err) {
-      log(err);
-      if (options.oneway) {
-        return;
-      }
-
-      // System error.
-      const code = (err instanceof ProtocolError) ? err.code : 'ERR_SYSTEM';
-      const response = { id, error: { code: code, message: err.message } };
-      this._protocol.feed.extension(this._name, this._codec.encode(response));
+      throw new ERR_EXTENSION_HANDSHAKE_FAILED(err.message);
     }
   }
 
@@ -243,9 +175,14 @@ export class Extension extends EventEmitter {
    *
    * @param {Buffer} discoveryKey
    */
-  onFeed (discoveryKey) {
-    if (this._feedHandler) {
-      this._feedHandler(this._protocol, discoveryKey);
+  async onFeed (discoveryKey) {
+    try {
+      await this.open();
+      if (this._feedHandler) {
+        await this._feedHandler(this._protocol, discoveryKey);
+      }
+    } catch (err) {
+      throw new ERR_EXTENSION_FEED_FAILED(err.message);
     }
   }
 
@@ -257,82 +194,65 @@ export class Extension extends EventEmitter {
    * @returns {Promise<Object>} Response from peer.
    */
   async send (message, options = {}) {
-    if (this._protocol.stream.destroyed) throw new Error('protocol closed');
-
-    assert(typeof message === 'object' || Buffer.isBuffer(message));
-
-    const { oneway = false } = options;
-
-    const request = {
-      id: crypto.randomBytes(32),
-      data: Buffer.isBuffer(message) ? { __type_url: 'dxos.protocol.Buffer', data: message } : message,
-      options: {
-        oneway
-      }
-    };
-
-    // Send the message.
-    this._send(request);
-
-    if (oneway) {
-      return;
+    if (options.oneway) {
+      return super.send(message);
     }
 
-    // Trigger the callback.
-    const promise = {};
+    const response = await this.request({ __type_url: 'dxos.protocol.Buffer', data: message });
+    return { response: { data: response } };
+  }
 
-    // Set the callback to be called when the response is received.
-    this._pendingMessages.set(request.id.toString('hex'), async (error, response) => {
-      log(`Response ${keyToHuman(this._protocol.stream.id, 'node')}: ${keyToHuman(request.id, 'msg')}`);
-      this._stats.receive++;
-      this.emit('receive', this._stats);
+  // Nanomesssage interface
 
-      if (error) {
-        promise.reject(error);
-        return;
-      }
-
-      if (promise.expired) {
-        promise.reject(new ProtocolError('ERR_REQUEST_TIMEOUT'));
-        return;
-      }
-
-      promise.resolve({ response });
+  async _open () {
+    if (this._protocol.stream.destroyed) throw new ERR_PROTOCOL_STREAM_CLOSED();
+    eos(this._protocol.stream, () => {
+      this.close();
     });
+    await super._open();
+  }
 
-    return new Promise((resolve, reject) => {
-      let timeoutHandle = null;
-
-      // Set timeout.
-      if (this._options.timeout) {
-        timeoutHandle = setTimeout(() => {
-          this._stats.error++;
-          reject({ code: 'ERR_REQUEST_TIMEOUT' }); // eslint-disable-line
-        }, this._options.timeout);
+  async _close () {
+    try {
+      // super._close() is not necessary in this case
+      if (this._closeHandler) {
+        await this._closeHandler(this._protocol);
       }
+    } catch (err) {
+      throw new ERR_EXTENSION_CLOSE_FAILED(err.message);
+    }
+  }
 
-      promise.resolve = (...args) => {
-        if (timeoutHandle) clearTimeout(timeoutHandle);
-        resolve(...args);
-      };
-      promise.reject = (err) => {
-        if (timeoutHandle) clearTimeout(timeoutHandle);
-        reject(err);
-      };
+  _subscribe (next) {
+    this.on('extension-message', async message => {
+      try {
+        await next(message);
+      } catch (err) {
+        this.emit('extension-subscribe-error', err);
+      }
     });
   }
 
-  /**
-   * Sends a extension message.
-   *
-   * @param {Buffer} request
-   * @returns {Boolean}
-   */
-  _send (request) {
-    log(`Sending a message ${keyToHuman(this._protocol.stream.id, 'node')}: ${keyToHuman(request.id, 'msg')}`);
-    this._protocol.feed.extension(this._name, this._codec.encode(request));
+  _send (chunk) {
+    if (this._protocol.stream.destroyed) return;
+    this._protocol.feed.extension(this._name, chunk);
+  }
 
-    this._stats.send++;
-    this.emit('send', this._stats);
+  async _onMessage (msg) {
+    try {
+      await this.open();
+      if (this._messageHandler) {
+        const result = await this._messageHandler(this._protocol, { data: msg.data });
+
+        if (result instanceof Error) {
+          return { __type_url: 'dxos.protocol.Error', data: result };
+        }
+
+        return { __type_url: 'dxos.protocol.Buffer', data: result };
+      }
+    } catch (err) {
+      this.emit('extension-message-error', err);
+      return { __type_url: 'dxos.protocol.Error', data: err };
+    }
   }
 }

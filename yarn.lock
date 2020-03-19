@@ -3765,6 +3765,11 @@ eventemitter3@^3.1.0:
   resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-3.1.2.tgz#2d3d48f9c346698fce83a85d7d664e98535df6e7"
   integrity sha512-tvtQIeLVHjDkJYnzf2dgVMxfuSGJeM/7UCG17TT4EumTfNtF+0nebF/4zWOIkCreAbtNqhGEboB6BWrwqNaw4Q==
 
+eventemitter3@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-4.0.0.tgz#d65176163887ee59f386d64c82610b696a4a74eb"
+  integrity sha512-qerSRB0p+UDEssxTtm6EDKcE7W4OaoisfIMl4CngyEhjpYglocpNg6UEqCvemdGhosAsg4sO2dXJOdyBifPGCg==
+
 exec-sh@^0.3.2:
   version "0.3.4"
   resolved "https://registry.yarnpkg.com/exec-sh/-/exec-sh-0.3.4.tgz#3a018ceb526cc6f6df2bb504b2bfe8e3a4934ec5"
@@ -4560,6 +4565,14 @@ hypercore@^7.0.0, hypercore@^7.7.1:
   optionalDependencies:
     fd-lock "^1.0.2"
 
+hyperid@^2.0.2:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/hyperid/-/hyperid-2.0.3.tgz#f3729f54d769a8473dda6471156f871827572a52"
+  integrity sha512-DjiKJrHehXuu0nDIY8Enzx5DohjoBuxL1wenzv5pQE6MsSp9tyBg/ziM2lxXXPu8L5DF02dsJgUrEQq1fJHVYQ==
+  dependencies:
+    uuid "^3.4.0"
+    uuid-parse "^1.1.0"
+
 hypertrie@^3.8.0:
   version "3.8.0"
   resolved "https://registry.yarnpkg.com/hypertrie/-/hypertrie-3.8.0.tgz#8227c7cae5c4a15401f0d088d8e53486d963143c"
@@ -4672,7 +4685,7 @@ inflight@^1.0.4:
     once "^1.3.0"
     wrappy "1"
 
-inherits@2, inherits@^2.0.1, inherits@^2.0.3, inherits@~2.0.3:
+inherits@2, inherits@^2.0.1, inherits@^2.0.3, inherits@^2.0.4, inherits@~2.0.3:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.4.tgz#0fa2c64f932917c3433a0ded55363aae37416b7c"
   integrity sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==
@@ -6247,6 +6260,18 @@ nanoassert@^1.0.0:
   resolved "https://registry.yarnpkg.com/nanoassert/-/nanoassert-1.1.0.tgz#4f3152e09540fde28c76f44b19bbcd1d5a42478d"
   integrity sha1-TzFS4JVA/eKMdvRLGbvNHVpCR40=
 
+nanocustomassert@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/nanocustomassert/-/nanocustomassert-1.0.0.tgz#84a1b067c47cd9fdaebb5431b49389f2e582b531"
+  integrity sha512-oIezVMlrrzPkCtK32NM5y4gU7JPi12NPWrIsXLyH7KL2D3IFYCtNEHSNgabBzoXCMkXI8AO6SMBUSPvJVf6NCA==
+
+nanoerror@^1.0.0, nanoerror@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/nanoerror/-/nanoerror-1.1.0.tgz#c358b1f249ff033e0d734013520d7e0a920b1f1e"
+  integrity sha512-pMuD3WQ75amZzRorXRLZOqc4dpIei1+2oD9rAR5wy0t6/mRWtV5SFpitkiN7+ZV8jIe54C41cgia5n34QaYI6A==
+  dependencies:
+    quick-format-unescaped "^3.0.3"
+
 nanoguard@^1.2.0:
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/nanoguard/-/nanoguard-1.2.2.tgz#a2069c563600a1853fd3ec31ed11e9681aa3dd80"
@@ -6276,6 +6301,32 @@ nanomatch@^1.2.9:
     regex-not "^1.0.0"
     snapdragon "^0.8.1"
     to-regex "^3.0.1"
+
+nanomessage@^5.2.3:
+  version "5.2.3"
+  resolved "https://registry.yarnpkg.com/nanomessage/-/nanomessage-5.2.3.tgz#e6213d2436f95c24e6b773c72f8ad94381df0e20"
+  integrity sha512-Rp6Y4/2IkBZuB5kjndJ8t1ilE+JWvSEkceEYeSaV2+mj/lqr5+kgVJKv00jXh3UFkGpHQTkB9i3Zkytxwp9CgQ==
+  dependencies:
+    end-of-stream "^1.4.4"
+    hyperid "^2.0.2"
+    nanocustomassert "^1.0.0"
+    nanoerror "^1.0.0"
+    nanoresource-promise "^1.2.0"
+    p-queue "^6.3.0"
+
+nanoresource-promise@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/nanoresource-promise/-/nanoresource-promise-1.2.0.tgz#0e70072fb0006c3a23502a618a5be19bbcef15a5"
+  integrity sha512-e8eZzEPWmZgySW4m+n/cH1IUYBOysM67RAuWL02sziwXTI/x0SZ4jIZTGqZltrpbw3K24yCuZf4a9sdj0t4W6w==
+  dependencies:
+    nanoresource "^1.3.0"
+
+nanoresource@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/nanoresource/-/nanoresource-1.3.0.tgz#823945d9667ab3e81a8b2591ab8d734552878cd0"
+  integrity sha512-OI5dswqipmlYfyL3k/YMm7mbERlh4Bd1KuKdMHpeoVD1iVxqxaTMKleB4qaA2mbQZ6/zMNSxCXv9M9P/YbqTuQ==
+  dependencies:
+    inherits "^2.0.4"
 
 napi-macros@^1.8.2:
   version "1.8.2"
@@ -6836,12 +6887,20 @@ p-queue@^4.0.0:
   dependencies:
     eventemitter3 "^3.1.0"
 
+p-queue@^6.3.0:
+  version "6.3.0"
+  resolved "https://registry.yarnpkg.com/p-queue/-/p-queue-6.3.0.tgz#19bfa4485db7e6a0c135049ff6716375880d9c3a"
+  integrity sha512-fg5dJlFpd5+3CgG3/0ogpVZUeJbjiyXFg0nu53hrOYsybqSiDyxyOpad0Rm6tAiGjgztAwkyvhlYHC53OiAJOA==
+  dependencies:
+    eventemitter3 "^4.0.0"
+    p-timeout "^3.1.0"
+
 p-reduce@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/p-reduce/-/p-reduce-1.0.0.tgz#18c2b0dd936a4690a529f8231f58a0fdb6a47dfa"
   integrity sha1-GMKw3ZNqRpClKfgjH1ig/bakffo=
 
-p-timeout@^3.2.0:
+p-timeout@^3.1.0, p-timeout@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/p-timeout/-/p-timeout-3.2.0.tgz#c7e17abc971d2a7962ef83626b35d635acf23dfe"
   integrity sha512-rhIwUycgwwKcP9yTOOFK/AKsAopjjCakVqLHePO3CC6Mir1Z99xT+R63jZxAT5lFZLa2inS5h+ZS2GvR99/FBg==
@@ -7287,6 +7346,11 @@ queue-microtask@^1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/queue-microtask/-/queue-microtask-1.1.2.tgz#139bf8186db0c545017ec66c2664ac646d5c571e"
   integrity sha512-F9wwNePtXrzZenAB3ax0Y8TSKGvuB7Qw16J30hspEUTbfUM+H827XyN3rlpwhVmtm5wuZtbKIHjOnwDn7MUxWQ==
+
+quick-format-unescaped@^3.0.3:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/quick-format-unescaped/-/quick-format-unescaped-3.0.3.tgz#fb3e468ac64c01d22305806c39f121ddac0d1fb9"
+  integrity sha512-dy1yjycmn9blucmJLXOfZDx1ikZJUi6E8bBZLnhPG5gBrVhHXx2xVyqqgKBubVNEXmx51dBACMHpoMQK/N/AXQ==
 
 quick-lru@^1.0.0:
   version "1.1.0"
@@ -8766,10 +8830,20 @@ util@^0.12.0:
     object.entries "^1.1.0"
     safe-buffer "^5.1.2"
 
+uuid-parse@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/uuid-parse/-/uuid-parse-1.1.0.tgz#7061c5a1384ae0e1f943c538094597e1b5f3a65b"
+  integrity sha512-OdmXxA8rDsQ7YpNVbKSJkNzTw2I+S5WsbMDnCtIWSQaosNAcWtFuI/YK1TjzUI6nbkgiqEyh8gWngfcv8Asd9A==
+
 uuid@^3.0.1, uuid@^3.3.2:
   version "3.3.3"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.3.3.tgz#4568f0216e78760ee1dbf3a4d2cf53e224112866"
   integrity sha512-pW0No1RGHgzlpHJO1nsVrHKpOEIxkGg1xB+v0ZmdNH5OAeAwzAVrCnI2/6Mtx+Uys6iaylxa+D3g4j63IKKjSQ==
+
+uuid@^3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
+  integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
 
 v8-compile-cache@^2.0.3:
   version "2.1.0"

@@ -5,38 +5,26 @@
         "protocol": {
           "nested": {
             "Message": {
-              "oneofs": {
-                "payload": {
-                  "oneof": [
-                    "data",
-                    "error"
-                  ]
-                }
-              },
               "fields": {
-                "id": {
-                  "type": "bytes",
+                "nmId": {
+                  "type": "string",
                   "id": 1
                 },
-                "options": {
-                  "type": "Options",
+                "nmResponse": {
+                  "type": "bool",
                   "id": 2
                 },
-                "data": {
-                  "type": "google.protobuf.Any",
+                "nmEphemeral": {
+                  "type": "bool",
                   "id": 3
                 },
-                "error": {
-                  "type": "Error",
+                "nmData": {
+                  "type": "google.protobuf.Any",
                   "id": 4
-                }
-              }
-            },
-            "Options": {
-              "fields": {
-                "oneway": {
-                  "type": "bool",
-                  "id": 1
+                },
+                "pepe": {
+                  "type": "string",
+                  "id": 5
                 }
               }
             },
