@@ -257,9 +257,11 @@ export class Protocol extends EventEmitter {
       } catch (err) {
         this._extensionInit.break()
           .finally(() => {
-            process.nextTick(() => this._stream.destroy(err));
-            err.code = 'ERR_ON_HANDSHAKE';
-            this.emit('error', err);
+            process.nextTick(() => {
+              err.code = 'ERR_ON_HANDSHAKE';
+              this._stream.destroy(err);
+              this.emit('error', err);
+            });
           });
         return;
       }

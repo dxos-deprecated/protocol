@@ -17,28 +17,20 @@ export class ExtensionInit extends Extension {
     this.setMessageHandler((protocol, message) => {
       const { data } = message;
 
-      switch (data.toString()) {
-        case 'continue': {
-          this._remoteInit = true;
-          this._remoteSignal.notify();
-          return;
-        }
-
-        case 'break': {
-          this._remoteInit = false;
-          this._remoteSignal.notify();
-          return;
-        }
-
-        case 'destroy': {
-          process.nextTick(() => protocol.stream.destroy(new Error('protocol closed')));
-        }
+      if (data.toString() === 'continue') {
+        this._remoteInit = true;
+        this._remoteSignal.notify();
+        return;
       }
+
+      // break
+      this._remoteInit = false;
+      this._remoteSignal.notify();
     });
 
     this.setCloseHandler(() => {
       this._remoteInit = false;
-      this._remoteSignal.notify(new Error('protocol closed'));
+      this._remoteSignal.notify();
     });
   }
 
@@ -48,7 +40,7 @@ export class ExtensionInit extends Extension {
       if (this._remoteInit !== null) {
         return this._remoteInit;
       } else {
-        await this._remoteSignal.wait();
+        await this._remoteSignal.wait(this._timeout);
         return this._remoteInit;
       }
     } catch (err) {
@@ -61,7 +53,6 @@ export class ExtensionInit extends Extension {
       if (this._remoteInit === false) return;
 
       await this.send(Buffer.from('break'));
-      this.send(Buffer.from('destroy'), { oneway: true });
     } catch (err) {}
   }
 }
