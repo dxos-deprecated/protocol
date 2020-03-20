@@ -8,6 +8,7 @@ import pump from 'pump';
 
 import { Extension } from './extension';
 import { Protocol } from './protocol';
+import { ERR_EXTENSION_RESPONSE_FAILED, ERR_EXTENSION_RESPONSE_TIMEOUT } from './errors';
 
 const log = debug('test');
 debug.enable('test,protocol');
@@ -50,18 +51,18 @@ test('basic', async () => {
         await sleep(2 * 1000);
         onInit();
       })
-      .setMessageHandler(async (protocol, message, options) => {
+      .setMessageHandler(async (protocol, message) => {
         const { data } = message;
-
-        if (options.oneway) {
-          waitOneWayMessage.resolve(data);
-          return;
-        }
 
         switch (data.toString()) {
           // Async response.
           case 'ping': {
             return Buffer.from('pong');
+          }
+
+          case 'oneway': {
+            waitOneWayMessage.resolve(data);
+            return;
           }
 
           // Timeout.
@@ -109,14 +110,14 @@ test('basic', async () => {
     try {
       await bufferMessages.send(Buffer.from('crash'));
     } catch (err) {
-      expect(err.code).toBe('ERR_SYSTEM');
-      expect(err.message).toBe('Invalid data.');
+      expect(ERR_EXTENSION_RESPONSE_FAILED.equals(err)).toBe(true);
+      expect(err.responseMessage).toBe('Invalid data.');
     }
 
     try {
       await bufferMessages.send(Buffer.from('timeout'));
     } catch (err) {
-      expect(err.code).toBe('ERR_REQUEST_TIMEOUT'); // timeout.
+      expect(ERR_EXTENSION_RESPONSE_TIMEOUT.equals(err)).toBe(true); // timeout.
     }
 
     log('%o', bufferMessages.stats);

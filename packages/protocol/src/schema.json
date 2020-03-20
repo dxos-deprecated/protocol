@@ -21,10 +21,6 @@
                 "nmData": {
                   "type": "google.protobuf.Any",
                   "id": 4
-                },
-                "pepe": {
-                  "type": "string",
-                  "id": 5
                 }
               }
             },

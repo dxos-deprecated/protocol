@@ -259,6 +259,7 @@ export class Protocol extends NanoresourcePromise {
     for (const [name, extension] of this._extensionMap) {
       log(`open extension "${name}": ${keyToHuman(this._stream.id, 'node')}`);
       await extension.openWithProtocol(this);
+      sortedExtensions.push(name);
     }
 
     sortedExtensions.sort().forEach(name => {

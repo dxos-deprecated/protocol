@@ -91,12 +91,7 @@ export class Messenger extends EventEmitter {
         this._addPeer(protocol);
       })
       .setMessageHandler(this._peerMessageHandler)
-      .setCloseHandler((err, protocol) => {
-        // This errors can happen all the time without been an issue.
-        const protocolErrors = ['Remote timed out', 'premature close'];
-        if (err && !protocolErrors.includes(err.message)) {
-          console.warn(err.message);
-        }
+      .setCloseHandler((protocol) => {
         this._removePeer(protocol);
       });
   }

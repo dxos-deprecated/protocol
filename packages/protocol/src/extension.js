@@ -5,7 +5,7 @@
 import assert from 'assert';
 import debug from 'debug';
 import eos from 'end-of-stream';
-import { Nanomessage } from 'nanomessage';
+import { Nanomessage, errors as nanomessageErrors } from 'nanomessage';
 
 import { Codec } from '@dxos/codec-protobuf';
 
@@ -16,8 +16,12 @@ import {
   ERR_EXTENSION_INIT_FAILED,
   ERR_EXTENSION_HANDSHAKE_FAILED,
   ERR_EXTENSION_FEED_FAILED,
-  ERR_EXTENSION_CLOSE_FAILED
+  ERR_EXTENSION_CLOSE_FAILED,
+  ERR_EXTENSION_RESPONSE_FAILED,
+  ERR_EXTENSION_RESPONSE_TIMEOUT
 } from './errors';
+
+const { NMSG_ERR_TIMEOUT } = nanomessageErrors;
 
 const log = debug('dxos:protocol:extension');
 
@@ -75,7 +79,10 @@ export class Extension extends Nanomessage {
       this.codec.addJson(options.schema);
     }
 
+    this.codec.encode.bind(this.codec);
+    this.codec.decode.bind(this.codec);
     this.codec.build();
+    this.on('error', err => log(err));
   }
 
   get name () {
@@ -195,11 +202,28 @@ export class Extension extends Nanomessage {
    */
   async send (message, options = {}) {
     if (options.oneway) {
-      return super.send(message);
+      return super.send(this._buildMessage(message));
     }
 
-    const response = await this.request({ __type_url: 'dxos.protocol.Buffer', data: message });
-    return { response: { data: response } };
+    try {
+      const response = await this.request(this._buildMessage(message));
+
+      if (response && response.code && response.message) {
+        throw new ERR_EXTENSION_RESPONSE_FAILED(response.code, response.message);
+      }
+
+      return { response };
+    } catch (err) {
+      if (ERR_EXTENSION_RESPONSE_FAILED.equals(err)) {
+        throw err;
+      }
+
+      if (NMSG_ERR_TIMEOUT.equals(err)) {
+        throw new ERR_EXTENSION_RESPONSE_TIMEOUT(err.message);
+      }
+
+      throw new ERR_EXTENSION_RESPONSE_FAILED(err.code || 'Error', err.message);
+    }
   }
 
   // Nanomesssage interface
@@ -214,7 +238,7 @@ export class Extension extends Nanomessage {
 
   async _close () {
     try {
-      // super._close() is not necessary in this case
+      await super._close();
       if (this._closeHandler) {
         await this._closeHandler(this._protocol);
       }
@@ -228,7 +252,7 @@ export class Extension extends Nanomessage {
       try {
         await next(message);
       } catch (err) {
-        this.emit('extension-subscribe-error', err);
+        this.emit('error', err);
       }
     });
   }
@@ -242,17 +266,29 @@ export class Extension extends Nanomessage {
     try {
       await this.open();
       if (this._messageHandler) {
-        const result = await this._messageHandler(this._protocol, { data: msg.data });
-
-        if (result instanceof Error) {
-          return { __type_url: 'dxos.protocol.Error', data: result };
-        }
-
-        return { __type_url: 'dxos.protocol.Buffer', data: result };
+        const result = await this._messageHandler(this._protocol, msg);
+        return this._buildMessage(result);
       }
     } catch (err) {
-      this.emit('extension-message-error', err);
-      return { __type_url: 'dxos.protocol.Error', data: err };
+      this.emit('error', err);
+      const responseError = new ERR_EXTENSION_RESPONSE_FAILED(err.code || 'Error', err.message);
+      return {
+        __type_url: 'dxos.protocol.Error',
+        code: responseError.responseCode,
+        message: responseError.responseMessage
+      };
     }
+  }
+
+  _buildMessage (message) {
+    if (!Buffer.isBuffer(message) && typeof message === 'object' && message.__type_url) {
+      return message;
+    }
+
+    if (typeof message === 'string') {
+      message = Buffer.from(message);
+    }
+
+    return { __type_url: 'dxos.protocol.Buffer', data: message };
   }
 }

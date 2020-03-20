@@ -45,7 +45,7 @@
     "humanhash": "^1.0.4",
     "hypercore-protocol": "^6.11.1",
     "nanoerror": "^1.1.0",
-    "nanomessage": "^5.2.3",
+    "nanomessage": "^5.2.5",
     "nanoresource-promise": "^1.2.0",
     "signal-promise": "^1.0.3",
     "source-map-support": "^0.5.12"

@@ -4,3 +4,4 @@
 
 export * from './protocol';
 export * from './extension';
+export * from './errors';

@@ -6302,10 +6302,10 @@ nanomatch@^1.2.9:
     snapdragon "^0.8.1"
     to-regex "^3.0.1"
 
-nanomessage@^5.2.3:
-  version "5.2.3"
-  resolved "https://registry.yarnpkg.com/nanomessage/-/nanomessage-5.2.3.tgz#e6213d2436f95c24e6b773c72f8ad94381df0e20"
-  integrity sha512-Rp6Y4/2IkBZuB5kjndJ8t1ilE+JWvSEkceEYeSaV2+mj/lqr5+kgVJKv00jXh3UFkGpHQTkB9i3Zkytxwp9CgQ==
+nanomessage@^5.2.5:
+  version "5.2.5"
+  resolved "https://registry.yarnpkg.com/nanomessage/-/nanomessage-5.2.5.tgz#ab70a3f9f36b34345cc7cbf4fbf24fcd51e2ca76"
+  integrity sha512-y3K6VxLREjFv5XbffrI5LdVjjQq/NiqBgF66xfMlkFX4Dd53hc3Nsiq4OG+Nu4XZVSesPF8HIj+5Qh/CkXAHxA==
   dependencies:
     end-of-stream "^1.4.4"
     hyperid "^2.0.2"
