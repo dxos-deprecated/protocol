@@ -246,7 +246,7 @@ export class Protocol extends NanoresourcePromise {
     this._stream.destroy();
     await this._extensionInit.close().catch(err => this.emit('error', err));
     for (const [name, extension] of this._extensionMap) {
-      log(`close extension "${name}": ${keyToHuman(this._stream.id)} <=> ${keyToHuman(this._stream.remoteId)}`);
+      log(`close extension "${name}"`);
       await extension.close().catch(err => this.emit('error', err));
     }
   }

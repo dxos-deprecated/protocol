@@ -23,7 +23,7 @@ export class Messenger extends EventEmitter {
    * @param {string} peerId
    * @param {Function} peerMessageHandler
    */
-  constructor (peerId, peerMessageHandler = () => {}) {
+  constructor (peerId, peerMessageHandler = () => {}, options = {}) {
     super();
 
     console.assert(Buffer.isBuffer(peerId));
@@ -40,12 +40,14 @@ export class Messenger extends EventEmitter {
       }
     };
 
+    this._ack = options.ack || false;
+
     const middleware = {
       lookup: () => {
         return Array.from(this._peers.values());
       },
-      send: (packet, peer) => {
-        this._sendPeerMessage(peer, packet);
+      send: async (packet, peer) => {
+        await this._sendPeerMessage(peer, packet);
       },
       subscribe: (onPacket) => {
         this._peerMessageHandler = (protocol, chunk) => {
@@ -142,7 +144,7 @@ export class Messenger extends EventEmitter {
   async _sendPeerMessage (peer, buffer) {
     return Promise.all(Array.from(peer.protocols.values()).map(protocol => {
       const chat = protocol.getExtension(Messenger.EXTENSION_NAME);
-      return chat.send(buffer, { oneway: true }).catch(() => {});
+      return chat.send(buffer, { oneway: !this._ack }).catch(() => {});
     }));
   }
 
