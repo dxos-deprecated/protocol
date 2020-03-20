@@ -1,6 +1,6 @@
 {
   "name": "@dxos/protocol-plugin-bot",
-  "version": "1.0.0-beta.5",
+  "version": "1.0.0-alpha.6",
   "description": "Protocol plugin for managing the life-cycle of bots.",
   "homepage": "https://github.com/dxos/protocol/tree/master/packages/protocol-plugin-bot#readme",
   "bugs": {
@@ -39,7 +39,7 @@
     "@dxos/broadcast": "^0.0.3",
     "@dxos/codec-protobuf": "^1.1.0-beta.7",
     "@dxos/crypto": "^1.0.0-beta.1",
-    "@dxos/protocol": "^1.0.0-beta.5",
+    "@dxos/protocol": "^1.0.0-alpha.6",
     "debug": "^4.1.1",
     "source-map-support": "^0.5.12"
   },
