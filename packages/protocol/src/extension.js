@@ -201,6 +201,8 @@ export class Extension extends Nanomessage {
    * @returns {Promise<Object>} Response from peer.
    */
   async send (message, options = {}) {
+    if (this._protocol.stream.destroyed) throw new ERR_PROTOCOL_STREAM_CLOSED();
+
     if (options.oneway) {
       return super.send(this._buildMessage(message));
     }

@@ -42,17 +42,10 @@ export class Messenger extends EventEmitter {
 
     const middleware = {
       lookup: () => {
-        return Array.from(this._peers.values()).map((peer) => {
-          const { peerId } = peer.getSession();
-
-          return {
-            id: peerId,
-            protocol: peer
-          };
-        });
+        return Array.from(this._peers.values());
       },
       send: (packet, peer) => {
-        this._sendPeerMessage(peer.protocol, packet);
+        this._sendPeerMessage(peer, packet);
       },
       subscribe: (onPacket) => {
         this._peerMessageHandler = (protocol, chunk) => {
@@ -78,7 +71,7 @@ export class Messenger extends EventEmitter {
   }
 
   get peers () {
-    return Array.from(this._peers.keys()).map(id => Buffer.from(id, 'hex'));
+    return Array.from(this._peers.values()).map(peer => peer.id);
   }
 
   /**
@@ -127,7 +120,9 @@ export class Messenger extends EventEmitter {
       peerId = Buffer.from(peerId, 'hex');
     }
 
-    const peer = this._peers.get(peerId.toString('hex'));
+    const idStr = peerId.toString('hex');
+
+    const peer = this._peers.get(idStr);
     if (!peer) {
       this.emit('peer:not-found', peerId);
       return;
@@ -139,14 +134,16 @@ export class Messenger extends EventEmitter {
 
   /**
    * Send message to peer.
-   * @param {Protocol} peer
+   * @param {Object<{id, protocols}>} peer
    * @param {Buffer} buffer
    * @return {Promise<void>}
    * @private
    */
   async _sendPeerMessage (peer, buffer) {
-    const chat = peer.getExtension(Messenger.EXTENSION_NAME);
-    await chat.send(buffer, { oneway: true });
+    return Promise.all(Array.from(peer.protocols.values()).map(protocol => {
+      const chat = protocol.getExtension(Messenger.EXTENSION_NAME);
+      return chat.send(buffer, { oneway: true }).catch(() => {});
+    }));
   }
 
   /**
@@ -155,15 +152,18 @@ export class Messenger extends EventEmitter {
    * @private
    */
   _addPeer (protocol) {
-    const { peerId } = protocol.getSession();
+    const session = protocol.getSession();
+    if (!session.peerId) throw new Error('missing peerId');
 
-    if (this._peers.has(peerId.toString('hex'))) {
-      this.emit('peer:already-connected', peerId);
-      return;
+    const idStr = session.peerId.toString('hex');
+
+    let peer = this._peers.get(idStr);
+    if (!peer) {
+      peer = { id: session.peerId, protocols: new Set() };
+      this._peers.set(idStr, peer);
     }
-
-    this._peers.set(peerId.toString('hex'), protocol);
-    this.emit('peer:joined', peerId, protocol);
+    peer.protocols.add(protocol);
+    this.emit('peer:joined', session.peerId, protocol);
   }
 
   /**
@@ -172,9 +172,18 @@ export class Messenger extends EventEmitter {
    * @private
    */
   _removePeer (protocol) {
-    console.assert(protocol);
-    const { peerId } = protocol.getSession();
-    this._peers.delete(peerId.toString('hex'));
-    this.emit('peer:left', peerId);
+    const session = protocol.getSession();
+    if (!session.peerId) return;
+
+    const idStr = session.peerId.toString('hex');
+
+    const peer = this._peers.get(idStr);
+    if (!peer) {
+      return;
+    }
+
+    peer.protocols.delete(protocol);
+    if (peer.protocols.size === 0) this._peers.delete(idStr);
+    this.emit('peer:left', session.peerId);
   }
 }
