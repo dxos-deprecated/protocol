@@ -120,8 +120,8 @@ export class BotPlugin extends EventEmitter {
           };
         });
       },
-      send: (packet, peer) => {
-        peer.protocol.getExtension(BotPlugin.EXTENSION_NAME).send(packet, { oneway: true });
+      send: async (packet, peer) => {
+        await peer.protocol.getExtension(BotPlugin.EXTENSION_NAME).send(packet);
       },
       subscribe: (onPacket) => {
         this._commandHandler = (protocol, chunk) => {

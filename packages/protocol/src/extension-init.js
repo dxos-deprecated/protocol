@@ -5,6 +5,7 @@
 import Signal from 'signal-promise';
 
 import { Extension } from './extension';
+import { ERR_PROTOCOL_INIT_INVALID } from './errors';
 
 export class ExtensionInit extends Extension {
   constructor (options = {}) {
@@ -37,14 +38,18 @@ export class ExtensionInit extends Extension {
   async continue () {
     try {
       await this.send(Buffer.from('continue'));
+
       if (this._remoteInit !== null) {
-        return this._remoteInit;
-      } else {
-        await this._remoteSignal.wait(this._timeout);
-        return this._remoteInit;
+        if (this._remoteInit) return;
+        throw new Error('remoteInit false');
       }
+
+      await this._remoteSignal.wait(this._timeout);
+
+      if (this._remoteInit) return;
+      throw new Error('remoteInit false');
     } catch (err) {
-      return false;
+      throw new ERR_PROTOCOL_INIT_INVALID(err.message);
     }
   }
 

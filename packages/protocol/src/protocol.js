@@ -13,7 +13,6 @@ import { NanoresourcePromise } from 'nanoresource-promise/emitter';
 import { ExtensionInit } from './extension-init';
 import { keyToHuman } from './utils';
 import {
-  ERR_PROTOCOL_INIT_INVALID,
   ERR_PROTOCOL_CONNECTION_INVALID,
   ERR_PROTOCOL_HANDSHAKE_FAILED,
   ERR_PROTOCOL_EXTENSION_MISSING
@@ -226,7 +225,9 @@ export class Protocol extends NanoresourcePromise {
     this._stream.once('handshake', async () => {
       try {
         await this._initExtensions();
+        this.emit('extensions-initialized');
         await this._handshakeExtensions();
+        this.emit('extensions-handshake');
       } catch (err) {
         this._stream.destroy();
         this.emit('error', err);
@@ -274,14 +275,14 @@ export class Protocol extends NanoresourcePromise {
         await extension.onInit();
       }
 
-      if (!(await this._extensionInit.continue())) {
-        throw new ERR_PROTOCOL_INIT_INVALID();
-      }
+      await this._extensionInit.continue();
+
+      Array.from(this._extensionMap.values()).forEach(extension => {
+        extension.emit('initialized');
+      });
     } catch (err) {
-      this._extensionInit.break()
-        .finally(() => {
-          this._stream.destroy();
-        });
+      await this._extensionInit.break();
+
       throw err;
     }
   }
