@@ -154,8 +154,15 @@ export class BotPlugin extends EventEmitter {
     this._broadcast.run();
 
     return new Extension(BotPlugin.EXTENSION_NAME)
-      .setHandshakeHandler((protocol) => {
+      .setInitHandler((protocol) => {
         this._addPeer(protocol);
+      })
+      .setHandshakeHandler(protocol => {
+        const { peerId } = protocol.getSession();
+
+        if (this._peers.has(keyToString(peerId))) {
+          this.emit('peer:joined', peerId, protocol);
+        }
       })
       .setMessageHandler(this._commandHandler)
       .setCloseHandler((protocol) => {
@@ -212,12 +219,10 @@ export class BotPlugin extends EventEmitter {
     const { peerId } = protocol.getSession();
 
     if (this._peers.has(keyToString(peerId))) {
-      this.emit('peer:already-connected', peerId);
       return;
     }
 
     this._peers.set(keyToString(peerId), protocol);
-    this.emit('peer:joined', peerId, protocol);
   }
 
   /**
