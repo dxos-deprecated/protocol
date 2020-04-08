@@ -154,7 +154,7 @@ export class BotPlugin extends EventEmitter {
     this._broadcast.run();
 
     return new Extension(BotPlugin.EXTENSION_NAME)
-      .setInitHandler((protocol) => {
+      .setHandshakeHandler((protocol) => {
         this._addPeer(protocol);
       })
       .setMessageHandler(this._commandHandler)

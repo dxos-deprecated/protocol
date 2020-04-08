@@ -276,10 +276,6 @@ export class Protocol extends NanoresourcePromise {
       }
 
       await this._extensionInit.continue();
-
-      Array.from(this._extensionMap.values()).forEach(extension => {
-        extension.emit('initialized');
-      });
     } catch (err) {
       await this._extensionInit.break();
 
