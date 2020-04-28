@@ -40,9 +40,11 @@ export class Messenger extends EventEmitter {
       }
     };
 
-    const { ack = false } = options;
+    const { ack = false, broadcast = {}, extension = {} } = options;
 
     this._ack = ack;
+    this._broadcastOptions = broadcast;
+    this._extensionOptions = extension;
 
     const middleware = {
       lookup: () => {
@@ -64,7 +66,8 @@ export class Messenger extends EventEmitter {
     };
 
     this._broadcast = new Broadcast(middleware, {
-      id: this._peerId
+      id: this._peerId,
+      ...this._broadcastOptions
     });
 
     this._codec = new Codec('dxos.protocol.messenger.Message')
@@ -83,8 +86,8 @@ export class Messenger extends EventEmitter {
    * @param {Object} options nanomessage options
    * @return {Extension}
    */
-  createExtension (options) {
-    return new Extension(Messenger.EXTENSION_NAME, options)
+  createExtension (options = {}) {
+    return new Extension(Messenger.EXTENSION_NAME, Object.assign({}, this._extensionOptions, options))
       .setInitHandler((protocol) => {
         this._addPeer(protocol);
       })
