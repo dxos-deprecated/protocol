@@ -40,14 +40,16 @@ export class Messenger extends EventEmitter {
       }
     };
 
-    this._ack = options.ack || false;
+    const { ack = false } = options;
+
+    this._ack = ack;
 
     const middleware = {
       lookup: () => {
         return Array.from(this._peers.values());
       },
-      send: async (packet, peer) => {
-        await this._sendPeerMessage(peer, packet);
+      send: async (packet, peer, options) => {
+        await this._sendPeerMessage(peer, packet, options);
       },
       subscribe: (onPacket) => {
         this._peerMessageHandler = (protocol, chunk) => {
@@ -140,13 +142,14 @@ export class Messenger extends EventEmitter {
    * Send message to peer.
    * @param {Object<{id, protocols}>} peer
    * @param {Buffer} buffer
+   * @param {Object} options
    * @return {Promise<void>}
    * @private
    */
-  async _sendPeerMessage (peer, buffer) {
+  async _sendPeerMessage (peer, buffer, options = { ack: this._ack }) {
     return Promise.all(Array.from(peer.protocols.values()).map(protocol => {
       const chat = protocol.getExtension(Messenger.EXTENSION_NAME);
-      return chat.send(buffer, { oneway: !this._ack }).catch(() => {});
+      return chat.send(buffer, { oneway: !options.ack }).catch(() => {});
     }));
   }
 
