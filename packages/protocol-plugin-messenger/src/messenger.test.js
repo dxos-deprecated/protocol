@@ -79,6 +79,10 @@ describe('test peer chat in a network graph of 15 peers', () => {
 
     await network.destroy();
 
-    expect(peers.reduce((prev, curr) => prev && curr.chat.peers.length === 0, true)).toBe(true);
+    await waitForExpect(() => {
+      expect(peers.reduce((prev, curr) => {
+        return prev && curr.chat.peers.length === 0;
+      }, true)).toBe(true);
+    }, 5000, 1000);
   });
 });

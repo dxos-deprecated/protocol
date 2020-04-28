@@ -78,10 +78,11 @@ export class Messenger extends EventEmitter {
 
   /**
    * Create protocol extension.
+   * @param {Object} options nanomessage options
    * @return {Extension}
    */
-  createExtension () {
-    return new Extension(Messenger.EXTENSION_NAME)
+  createExtension (options) {
+    return new Extension(Messenger.EXTENSION_NAME, options)
       .setInitHandler((protocol) => {
         this._addPeer(protocol);
       })
@@ -95,14 +96,15 @@ export class Messenger extends EventEmitter {
    * Broadcast message to peers.
    * @param {string} type
    * @param {Buffer} payload
+   * @param {Object} options @dxos/broadcast options
    * @return {Promise<void>}
    */
-  async broadcastMessage (type, payload) {
+  async broadcastMessage (type, payload, options) {
     assert(type);
     assert(Buffer.isBuffer(payload));
 
     const buffer = this._codec.encode({ type, payload });
-    await this._broadcast.publish(buffer);
+    await this._broadcast.publish(buffer, options);
   }
 
   /**

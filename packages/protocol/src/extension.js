@@ -68,15 +68,17 @@ export class Extension extends Nanomessage {
   constructor (name, options = {}) {
     assert(typeof name === 'string' && name.length > 0, 'name is required.');
 
-    super(options);
+    const { schema: userSchema, ...nmOptions } = options;
+
+    super(nmOptions);
 
     this._name = name;
 
     this.codec = new Codec('dxos.protocol.Message')
       .addJson(JSON.parse(schema));
 
-    if (options.schema) {
-      this.codec.addJson(options.schema);
+    if (userSchema) {
+      this.codec.addJson(userSchema);
     }
 
     this.codec.encode.bind(this.codec);
