@@ -4,14 +4,14 @@
 
 import { EventEmitter } from 'events';
 import assert from 'assert';
-import debug from 'debug';
+// import debug from 'debug';
 
 import { Extension } from '@dxos/protocol';
 
 import { Peer } from './peer';
 import schema from './schema.json';
 
-const log = debug('dxos.replicator');
+// const log = debug('dxos.replicator');
 
 const defaultReplicate = () => {};
 const defaultSubscribe = () => () => {};
@@ -145,8 +145,7 @@ export class Replicator extends EventEmitter {
     await this._replicateHandler(protocol, [{ discoveryKey }]);
   }
 
-  _closeHandler (err, protocol) {
-    log('replicator close', err);
+  _closeHandler (protocol) {
     const peer = this._peers.get(protocol);
     if (peer) {
       peer.close();

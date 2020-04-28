@@ -49,6 +49,9 @@ describe('test peer chat in a network graph of 15 peers', () => {
     });
 
     const { peers } = network;
+
+    expect(peers.reduce((prev, curr) => prev && curr.chat.peers.length > 0, true)).toBe(true);
+
     const peer1 = random(peers);
     let peer2 = random(peer1.chat.peers);
     peer2 = peers.find(p => p.id.equals(peer2));
@@ -73,6 +76,13 @@ describe('test peer chat in a network graph of 15 peers', () => {
     }, 10000, 5000);
 
     peers.forEach(peer => peer.chat._broadcast.stop());
+
     await network.destroy();
+
+    await waitForExpect(() => {
+      expect(peers.reduce((prev, curr) => {
+        return prev && curr.chat.peers.length === 0;
+      }, true)).toBe(true);
+    }, 5000, 1000);
   });
 });

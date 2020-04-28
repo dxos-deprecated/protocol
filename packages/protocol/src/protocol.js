@@ -2,23 +2,28 @@
 // Copyright 2019 DxOS.
 //
 
-import { EventEmitter } from 'events';
 import assert from 'assert';
 
 import debug from 'debug';
 import protocol from 'hypercore-protocol';
 import eos from 'end-of-stream';
 import bufferJson from 'buffer-json-encoding';
+import { NanoresourcePromise } from 'nanoresource-promise/emitter';
 
 import { ExtensionInit } from './extension-init';
 import { keyToHuman } from './utils';
+import {
+  ERR_PROTOCOL_CONNECTION_INVALID,
+  ERR_PROTOCOL_HANDSHAKE_FAILED,
+  ERR_PROTOCOL_EXTENSION_MISSING
+} from './errors';
 
 const log = debug('dxos:protocol');
 
 /**
  * Wraps a hypercore-protocol object.
  */
-export class Protocol extends EventEmitter {
+export class Protocol extends NanoresourcePromise {
   /**
    * Protocol extensions.
    * @type {Map<type, Extension>}
@@ -67,8 +72,9 @@ export class Protocol extends EventEmitter {
 
     this._stream = protocol(this._streamOptions);
 
+    this._extensionInit = new ExtensionInit({ timeout: this._initTimeout });
+
     this._init = false;
-    this._handshakeValidated = false;
 
     this._handshakes = [];
     this.on('error', error => {
@@ -184,7 +190,13 @@ export class Protocol extends EventEmitter {
    * @returns {Protocol}
    */
   setHandshakeHandler (handler) {
-    this._handshakes.push(handler);
+    this._handshakes.push(async (protocol) => {
+      try {
+        await handler(protocol);
+      } catch (err) {
+        throw new ERR_PROTOCOL_HANDSHAKE_FAILED(err.message);
+      }
+    });
     return this;
   }
 
@@ -200,154 +212,151 @@ export class Protocol extends EventEmitter {
     assert(!this._init);
 
     this._init = true;
+    this._discoveryKey = discoveryKey;
+    this.open().catch(err => this.emit('error', err));
 
-    this._extensionInit = new ExtensionInit({ timeout: this._initTimeout });
-    this._extensionInit.init(this);
+    return this;
+  }
 
-    // Initialize extensions.
-    const sortedExtensions = [this._extensionInit.name];
-    this._extensionMap.forEach(extension => {
-      sortedExtensions.push(extension.name);
-      extension.init(this);
-    });
-
-    sortedExtensions.sort().forEach(name => {
-      this._stream.extensions.push(name);
-    });
+  async _open () {
+    await this._openExtensions();
 
     // Handshake.
     this._stream.once('handshake', async () => {
       try {
-        for (const [name, extension] of this._extensionMap) {
-          if (this._stream.destroyed) {
-            return;
-          }
-
-          log(`init extension "${name}": ${keyToHuman(this._stream.id)} <=> ${keyToHuman(this._stream.remoteId)}`);
-          await extension.onInit();
-        }
-
-        if (!(await this._extensionInit.continue())) {
-          throw new Error('invalid init protocol');
-        }
-
-        for (const handshake of this._handshakes) {
-          if (this._stream.destroyed) {
-            return;
-          }
-
-          await handshake(this);
-        }
-
-        for (const [name, extension] of this._extensionMap) {
-          if (this._stream.destroyed) {
-            return;
-          }
-
-          log(`handshake extension "${name}": ${keyToHuman(this._stream.id)} <=> ${keyToHuman(this._stream.remoteId)}`);
-          await extension.onHandshake();
-        }
-
-        if (this._stream.destroyed) {
-          return;
-        }
-
-        log(`handshake: ${keyToHuman(this._stream.id)} <=> ${keyToHuman(this._stream.remoteId)}`);
-        this.emit('handshake', this);
+        await this._initExtensions();
+        this.emit('extensions-initialized');
+        await this._handshakeExtensions();
+        this.emit('extensions-handshake');
       } catch (err) {
-        this._extensionInit.break()
-          .finally(() => {
-            process.nextTick(() => {
-              err.code = 'ERR_ON_HANDSHAKE';
-              this._stream.destroy(err);
-              this.emit('error', err);
-            });
-          });
-        return;
+        this._stream.destroy();
+        this.emit('error', err);
       }
-
-      this._stream.on('feed', (discoveryKey) => {
-        try {
-          this._extensionMap.forEach((extension) => {
-            extension.onFeed(discoveryKey);
-          });
-        } catch (err) {
-          err.code = 'ERR_ON_FEED';
-          this.emit('error', err);
-        }
-      });
     });
 
-    let initialKey = null;
+    this._openConnection();
 
-    // If this protocol stream is being created via a swarm connection event,
-    // only the client side will know the topic (i.e. initial feed key to share).
-    if (discoveryKey) {
-      initialKey = this._discoveryToPublicKey(discoveryKey);
-      if (!initialKey) {
-        this.emit('error',
-          new Error(`init:stream:feed - Public key not found for discovery key: ${keyToHuman(this._stream.id, 'node')} ${keyToHuman(discoveryKey)}`)
-        );
-      }
-      this._initStream(initialKey);
-    } else {
-      // Wait for the peer to share the initial feed and see if we have the public key for that.
-      this._stream.once('feed', async (discoveryKey) => {
-        initialKey = this._discoveryToPublicKey(discoveryKey);
-
-        if (!initialKey) {
-          // Stream will get aborted soon as both sides haven't shared the same initial Dat feed.
-          this.emit('error',
-            new Error(`init:stream:feed - Public key not found for discovery key: ${keyToHuman(this._stream.id, 'node')} ${keyToHuman(discoveryKey)}`)
-          );
-
-          return;
-        }
-
-        if (this._feed) {
-          return;
-        }
-
-        this._initStream(initialKey);
-      });
-    }
-
-    eos(this._stream, (err) => {
-      this._extensionInit.onClose();
-      this._extensionMap.forEach((extension) => {
-        extension.onClose(err);
-      });
+    eos(this._stream, () => {
+      this.close();
     });
 
     log(keyToHuman(this._stream.id, 'node'), 'initialized');
-    return this;
   }
 
-  /**
-   * Init Dat stream by sharing the same initial feed key.
-   * https://datprotocol.github.io/how-dat-works/#feed-message
-   * @param key
-   * @private
-   */
-  _initStream (key) {
-    this._feed = this._stream.feed(key);
-    this._feed.on('extension', this._extensionHandler);
+  async _close () {
+    this._stream.destroy();
+    await this._extensionInit.close().catch(err => this.emit('error', err));
+    for (const [name, extension] of this._extensionMap) {
+      log(`close extension "${name}"`);
+      await extension.close().catch(err => this.emit('error', err));
+    }
+  }
+
+  async _openExtensions () {
+    await this._extensionInit.openWithProtocol(this);
+
+    const sortedExtensions = [this._extensionInit.name];
+
+    for (const [name, extension] of this._extensionMap) {
+      log(`open extension "${name}": ${keyToHuman(this._stream.id, 'node')}`);
+      await extension.openWithProtocol(this);
+      sortedExtensions.push(name);
+    }
+
+    sortedExtensions.sort().forEach(name => {
+      this._stream.extensions.push(name);
+    });
+  }
+
+  async _initExtensions () {
+    try {
+      for (const [name, extension] of this._extensionMap) {
+        log(`init extension "${name}": ${keyToHuman(this._stream.id)} <=> ${keyToHuman(this._stream.remoteId)}`);
+        await extension.onInit();
+      }
+
+      await this._extensionInit.continue();
+    } catch (err) {
+      await this._extensionInit.break();
+
+      throw err;
+    }
+  }
+
+  async _handshakeExtensions () {
+    for (const handshake of this._handshakes) {
+      await handshake(this);
+    }
+
+    for (const [name, extension] of this._extensionMap) {
+      log(`handshake extension "${name}": ${keyToHuman(this._stream.id)} <=> ${keyToHuman(this._stream.remoteId)}`);
+      await extension.onHandshake();
+    }
+
+    log(`handshake: ${keyToHuman(this._stream.id)} <=> ${keyToHuman(this._stream.remoteId)}`);
+    this.emit('handshake', this);
+
+    this._stream.on('feed', async (discoveryKey) => {
+      try {
+        for (const [name, extension] of this._extensionMap) {
+          log(`feed extension "${name}": ${keyToHuman(this._stream.id)} <=> ${keyToHuman(this._stream.remoteId)}`);
+          await extension.onFeed(discoveryKey);
+        }
+      } catch (err) {
+        this.emit('error', err);
+      }
+    });
+  }
+
+  _openConnection () {
+    let initialKey = null;
+
+    const openFeed = async (discoveryKey) => {
+      try {
+        initialKey = await this._discoveryToPublicKey(discoveryKey);
+        if (!initialKey) {
+          throw new ERR_PROTOCOL_CONNECTION_INVALID('key not found');
+        }
+
+        // init stream
+        this._feed = this._stream.feed(initialKey);
+        this._feed.on('extension', this._extensionHandler);
+      } catch (err) {
+        if (ERR_PROTOCOL_CONNECTION_INVALID.equals(err)) {
+          this.emit('error', err);
+        } else {
+          this.emit('error', new ERR_PROTOCOL_CONNECTION_INVALID(err.message));
+        }
+        this._stream.destroy();
+      }
+    };
+
+    // If this protocol stream is being created via a swarm connection event,
+    // only the client side will know the topic (i.e. initial feed key to share).
+    if (this._discoveryKey) {
+      openFeed(this._discoveryKey);
+    } else {
+      // Wait for the peer to share the initial feed and see if we have the public key for that.
+      this._stream.once('feed', openFeed);
+    }
   }
 
   /**
    * Handles extension messages.
    */
-  _extensionHandler = async (name, message) => {
+  _extensionHandler = (name, message) => {
     if (name === this._extensionInit.name) {
-      return this._extensionInit.onMessage(message);
+      this._extensionInit.emit('extension-message', message);
+      return;
     }
 
     const extension = this._extensionMap.get(name);
     if (!extension) {
-      this.emit('error', new Error(`Missing extension: ${name}`));
+      this.emit('error', new ERR_PROTOCOL_EXTENSION_MISSING(name));
+      this._stream.destroy();
       return;
     }
 
-    await extension.onMessage(message);
+    extension.emit('extension-message', message);
   }
 }

@@ -120,8 +120,8 @@ export class BotPlugin extends EventEmitter {
           };
         });
       },
-      send: (packet, peer) => {
-        peer.protocol.getExtension(BotPlugin.EXTENSION_NAME).send(packet, { oneway: true });
+      send: async (packet, peer) => {
+        await peer.protocol.getExtension(BotPlugin.EXTENSION_NAME).send(packet);
       },
       subscribe: (onPacket) => {
         this._commandHandler = (protocol, chunk) => {
@@ -157,13 +157,15 @@ export class BotPlugin extends EventEmitter {
       .setInitHandler((protocol) => {
         this._addPeer(protocol);
       })
-      .setMessageHandler(this._commandHandler)
-      .setCloseHandler((err, protocol) => {
-        // This errors can happen all the time without been an issue.
-        const protocolErrors = ['Remote timed out', 'premature close'];
-        if (err && !protocolErrors.includes(err.message)) {
-          console.warn(err.message);
+      .setHandshakeHandler(protocol => {
+        const { peerId } = protocol.getSession();
+
+        if (this._peers.has(keyToString(peerId))) {
+          this.emit('peer:joined', peerId, protocol);
         }
+      })
+      .setMessageHandler(this._commandHandler)
+      .setCloseHandler((protocol) => {
         this._removePeer(protocol);
       });
   }
@@ -217,12 +219,10 @@ export class BotPlugin extends EventEmitter {
     const { peerId } = protocol.getSession();
 
     if (this._peers.has(keyToString(peerId))) {
-      this.emit('peer:already-connected', peerId);
       return;
     }
 
     this._peers.set(keyToString(peerId), protocol);
-    this.emit('peer:joined', peerId, protocol);
   }
 
   /**
