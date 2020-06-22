@@ -153,3 +153,44 @@ export class Replicator extends EventEmitter {
     this._peers.delete(protocol);
   }
 }
+
+const noop = () => {};
+
+const middleware = ({ feedStore, onUnsubscribe = noop, onLoad = noop }) => ({
+  subscribe (next) {
+    const onFeed = feed => next(feed);
+    feedStore.on('feed', onFeed);
+    return () => {
+      onUnsubscribe(feedStore);
+      feedStore.removeListener('feed', onFeed);
+    };
+  },
+  async load () {
+    return onLoad(feedStore);
+  },
+  async replicate (feeds) {
+    return Promise.all(feeds.map(({ key, discoveryKey }) => {
+      if (key) {
+        const feed = feedStore.getOpenFeed(d => d.key.equals(key));
+
+        if (feed) {
+          return feed;
+        }
+
+        return feedStore.openFeed(`/remote/${key.toString('hex')}`, { key });
+      }
+
+      if (discoveryKey) {
+        return feedStore.getOpenFeed(d => d.discoveryKey.equals(discoveryKey));
+      }
+
+      return null;
+    }));
+  }
+});
+
+export class DefaultReplicator extends Replicator {
+  constructor (opts = {}) {
+    super(middleware(opts));
+  }
+}

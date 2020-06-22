@@ -14,7 +14,7 @@ import { FeedStore } from '@dxos/feed-store';
 import { Protocol } from '@dxos/protocol';
 import { ProtocolNetworkGenerator } from '@dxos/protocol-network-generator';
 
-import { Replicator } from '.';
+import { DefaultReplicator } from '.';
 
 jest.setTimeout(30000);
 
@@ -24,41 +24,13 @@ const generator = new ProtocolNetworkGenerator(async (topic, peerId) => {
   const append = pify(feed.append.bind(feed));
   let closed = false;
 
-  // Middleware for replicator
-  const middleware = {
-    subscribe (next) {
-      const onFeed = feed => next(feed);
-      feedStore.on('feed', onFeed);
-      return () => {
-        closed = true;
-        feedStore.removeListener('feed', onFeed);
-      };
-    },
-    async load () {
-      return [feed];
-    },
-    async replicate (feeds) {
-      return Promise.all(feeds.map(({ key, discoveryKey }) => {
-        if (key) {
-          const feed = feedStore.getOpenFeed(d => d.key.equals(key));
-
-          if (feed) {
-            return feed;
-          }
-
-          return feedStore.openFeed(`/${key.toString('hex')}`, { key });
-        }
-
-        if (discoveryKey) {
-          return feedStore.getOpenFeed(d => d.discoveryKey.equals(discoveryKey));
-        }
-
-        return null;
-      }));
+  const replicator = new DefaultReplicator({
+    feedStore,
+    onLoad: () => [feed],
+    onUnsubscribe: () => {
+      closed = true;
     }
-  };
-
-  const replicator = new Replicator(middleware);
+  });
 
   return {
     id: peerId,
