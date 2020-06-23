@@ -10,6 +10,7 @@ import waitForExpect from 'wait-for-expect';
 import eos from 'end-of-stream';
 
 import { FeedStore } from '@dxos/feed-store';
+import { discoveryKey } from '@dxos/crypto';
 
 import { Protocol } from '@dxos/protocol';
 import { ProtocolNetworkGenerator } from '@dxos/protocol-network-generator';
@@ -46,7 +47,7 @@ const generator = new ProtocolNetworkGenerator(async (topic, peerId) => {
         .setSession({ id: 'session1' })
         .setContext({ name: 'foo' })
         .setExtensions([replicator.createExtension()])
-        .init(topic);
+        .init(discoveryKey(topic));
     },
     append (msg) {
       return append(msg);

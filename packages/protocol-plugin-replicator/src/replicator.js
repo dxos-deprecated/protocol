@@ -4,7 +4,7 @@
 
 import { EventEmitter } from 'events';
 import assert from 'assert';
-// import debug from 'debug';
+import bufferJson from 'buffer-json-encoding';
 
 import { Extension } from '@dxos/protocol';
 
@@ -166,10 +166,15 @@ const middleware = ({ feedStore, onUnsubscribe = noop, onLoad = noop }) => ({
     };
   },
   async load () {
-    return onLoad(feedStore);
+    const feeds = onLoad(feedStore);
+    return feeds.map(feed => ({
+      key: feed.key,
+      discoveryKey: feed.discoveryKey,
+      metadata: feed.metadata && bufferJson.encode(feed.metadata)
+    }));
   },
   async replicate (feeds) {
-    return Promise.all(feeds.map(({ key, discoveryKey }) => {
+    return Promise.all(feeds.map(({ key, discoveryKey, metadata }) => {
       if (key) {
         const feed = feedStore.getOpenFeed(d => d.key.equals(key));
 
@@ -177,7 +182,7 @@ const middleware = ({ feedStore, onUnsubscribe = noop, onLoad = noop }) => ({
           return feed;
         }
 
-        return feedStore.openFeed(`/remote/${key.toString('hex')}`, { key });
+        return feedStore.openFeed(`/remote/${key.toString('hex')}`, { key, metadata: metadata && bufferJson.decode(metadata) });
       }
 
       if (discoveryKey) {
