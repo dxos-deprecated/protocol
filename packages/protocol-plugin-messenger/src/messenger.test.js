@@ -25,7 +25,7 @@ const generator = new ProtocolNetworkGenerator((topic, peerId) => {
     id: peerId,
     chat,
     messages,
-    stream () {
+    createProtocol () {
       return new Protocol({
         streamOptions: {
           live: true
@@ -33,8 +33,7 @@ const generator = new ProtocolNetworkGenerator((topic, peerId) => {
       })
         .setSession({ peerId })
         .setExtensions([chat.createExtension()])
-        .init(topic)
-        .stream;
+        .init(topic);
     }
   };
 });

@@ -76,6 +76,8 @@ export class Protocol extends NanoresourcePromise {
 
     this._init = false;
 
+    this._connected = false;
+
     this._handshakes = [];
     this.on('error', error => {
       log(error);
@@ -109,6 +111,10 @@ export class Protocol extends NanoresourcePromise {
 
   get streamOptions () {
     return Object.assign({}, { id: this._stream.id }, this._streamOptions);
+  }
+
+  get connected () {
+    return this._connected;
   }
 
   /**
@@ -244,6 +250,7 @@ export class Protocol extends NanoresourcePromise {
   }
 
   async _close () {
+    this._connected = false;
     this._stream.destroy();
     await this._extensionInit.close().catch(err => this.emit('error', err));
     for (const [name, extension] of this._extensionMap) {
@@ -295,6 +302,7 @@ export class Protocol extends NanoresourcePromise {
 
     log(`handshake: ${keyToHuman(this._stream.id)} <=> ${keyToHuman(this._stream.remoteId)}`);
     this.emit('handshake', this);
+    this._connected = true;
 
     this._stream.on('feed', async (discoveryKey) => {
       try {

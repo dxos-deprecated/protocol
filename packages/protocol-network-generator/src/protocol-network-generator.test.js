@@ -10,14 +10,13 @@ test('basic generator', async () => {
   const generator = new ProtocolNetworkGenerator((topic, id) => {
     return {
       id,
-      stream () {
+      createProtocol () {
         return new Protocol({
           streamOptions: {
             live: true
           }
         })
-          .init(topic)
-          .stream;
+          .init(topic);
       }
     };
   });

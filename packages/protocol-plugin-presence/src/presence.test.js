@@ -23,17 +23,16 @@ const random = arr => arr[Math.floor(Math.random() * arr.length)];
 
 const generator = new ProtocolNetworkGenerator((topic, peerId) => {
   const presence = new Presence(peerId);
-  const stream = () => new Protocol({
+  const createProtocol = () => new Protocol({
     streamOptions: {
       live: true
     }
   })
     .setSession({ peerId })
     .setExtension(presence.createExtension())
-    .init(topic)
-    .stream;
+    .init(topic);
 
-  return { id: peerId, presence, stream };
+  return { id: peerId, presence, createProtocol };
 });
 
 function links (graph) {
