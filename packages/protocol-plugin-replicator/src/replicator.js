@@ -156,43 +156,55 @@ export class Replicator extends EventEmitter {
 
 const noop = () => {};
 
-const middleware = ({ feedStore, onUnsubscribe = noop, onLoad = noop }) => ({
-  subscribe (next) {
-    const onFeed = feed => next(feed);
-    feedStore.on('feed', onFeed);
-    return () => {
-      onUnsubscribe(feedStore);
-      feedStore.removeListener('feed', onFeed);
-    };
-  },
-  async load () {
-    const feeds = onLoad(feedStore);
-    return feeds.map(feed => ({
-      key: feed.key,
-      discoveryKey: feed.discoveryKey,
-      metadata: feed.metadata && bufferJson.encode(feed.metadata)
-    }));
-  },
-  async replicate (feeds) {
-    return Promise.all(feeds.map(({ key, discoveryKey, metadata }) => {
-      if (key) {
-        const feed = feedStore.getOpenFeed(d => d.key.equals(key));
+const middleware = ({ feedStore, onUnsubscribe = noop, onLoad = noop }) => {
+  const encodeFeed = (feed, descriptor = {}) => ({
+    key: feed.key,
+    discoveryKey: feed.discoveryKey,
+    metadata: descriptor.metadata && bufferJson.encode(descriptor.metadata)
+  });
 
-        if (feed) {
-          return feed;
+  const decodeFeed = feed => ({
+    key: feed.key,
+    discoveryKey: feed.discoveryKey,
+    metadata: feed.metadata && bufferJson.decode(feed.metadata)
+  });
+
+  return {
+    subscribe (next) {
+      const onFeed = (feed, descriptor) => next(encodeFeed(feed, descriptor));
+      feedStore.on('feed', onFeed);
+      return () => {
+        onUnsubscribe(feedStore);
+        feedStore.removeListener('feed', onFeed);
+      };
+    },
+    async load () {
+      const feeds = onLoad(feedStore);
+      return feeds.map(feed => encodeFeed(feed, feedStore.getDescriptorByDiscoveryKey(feed.discoveryKey)));
+    },
+    async replicate (feeds) {
+      return Promise.all(feeds.map((feed) => {
+        const { key, discoveryKey, metadata } = decodeFeed(feed);
+
+        if (key) {
+          const feed = feedStore.getOpenFeed(d => d.key.equals(key));
+
+          if (feed) {
+            return feed;
+          }
+
+          return feedStore.openFeed(`/remote/${key.toString('hex')}`, { key, metadata });
         }
 
-        return feedStore.openFeed(`/remote/${key.toString('hex')}`, { key, metadata: metadata && bufferJson.decode(metadata) });
-      }
+        if (discoveryKey) {
+          return feedStore.getOpenFeed(d => d.discoveryKey.equals(discoveryKey));
+        }
 
-      if (discoveryKey) {
-        return feedStore.getOpenFeed(d => d.discoveryKey.equals(discoveryKey));
-      }
-
-      return null;
-    }));
-  }
-});
+        return null;
+      }));
+    }
+  };
+};
 
 export class DefaultReplicator extends Replicator {
   constructor (opts = {}) {

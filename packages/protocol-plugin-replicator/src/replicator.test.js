@@ -38,6 +38,9 @@ const generator = new ProtocolNetworkGenerator(async (topic, peerId) => {
     getFeeds () {
       return feedStore.getOpenFeeds();
     },
+    getDescriptors () {
+      return feedStore.getDescriptors();
+    },
     createProtocol () {
       return new Protocol({
         streamOptions: {
@@ -93,6 +96,13 @@ describe('test data replication in a balanced network graph of 15 peers', () => 
 
       expect(result).toBe(true);
     }, 4500, 1000);
+
+    let metadataOk = true;
+    for (const peer of network.peers) {
+      metadataOk = metadataOk && !peer.getDescriptors().find(d => !d.metadata || !d.metadata.topic);
+    }
+
+    expect(metadataOk).toBe(true);
   });
 
   test('message synchronization', async () => {
