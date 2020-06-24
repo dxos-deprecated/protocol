@@ -50,18 +50,19 @@ export class ProtocolNetworkGenerator extends EventEmitter {
    * @param {Object} options
    * @param {Buffer} options.topic Buffer to use on the stream protocol initialization
    * @param {boolean} [options.waitForFullConnection=true] Wait until all the connections are ready
+   * @param {Object} options.peer peer options
    * @param {Object} options.protocol Protocol options
    * @param {Array} options.parameters Arguments for the ngraph generator.
    * @returns {Promise<Network>}
    */
   async _generate (topology, options = {}) {
-    const { topic, waitForFullConnection = true, protocol = {}, parameters = [] } = options;
+    const { topic, waitForFullConnection = true, peer: peerOptions = {}, protocol = {}, parameters = [] } = options;
 
     assert(Buffer.isBuffer(topic), 'topic is required and must be a buffer');
 
     const generator = new NetworkGenerator({
       createPeer: async id => {
-        const peer = await this._createPeer(topic, id);
+        const peer = await this._createPeer(topic, id, peerOptions);
         assert(typeof peer === 'object', 'peer must be an object');
         assert(Buffer.isBuffer(peer.id), 'peer.id is required');
         assert(typeof peer.createProtocol === 'function', 'peer.createProtocol is required and must be a function');
