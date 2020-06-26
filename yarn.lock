@@ -802,15 +802,6 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@dxos/broadcast@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@dxos/broadcast/-/broadcast-0.0.1.tgz#26a41c3dfa072a7e3ce5dc7b9267183f7450bed0"
-  integrity sha512-NwyIQk3ZAmSidhpfDz5m/8qu4S4fWY4yUC+8jGJVgSKdak45y0ddzECawf/1p671WtJXDIuwDJp0x5Rg91HBbA==
-  dependencies:
-    "@dxos/codec-protobuf" "^1.1.0-beta.0"
-    debug "^4.1.1"
-    source-map-support "^0.5.12"
-
 "@dxos/broadcast@^1.0.0-beta.6":
   version "1.0.0-beta.6"
   resolved "https://registry.yarnpkg.com/@dxos/broadcast/-/broadcast-1.0.0-beta.6.tgz#d7d1f09f3fe1ac0e97c5b347bb4f76adf1522eb5"
@@ -820,7 +811,7 @@
     debug "^4.1.1"
     source-map-support "^0.5.12"
 
-"@dxos/codec-protobuf@^1.1.0-beta.0", "@dxos/codec-protobuf@^1.1.0-beta.2", "@dxos/codec-protobuf@^1.1.0-beta.7", "@dxos/codec-protobuf@^1.1.0-beta.9":
+"@dxos/codec-protobuf@^1.1.0-beta.2", "@dxos/codec-protobuf@^1.1.0-beta.7", "@dxos/codec-protobuf@^1.1.0-beta.9":
   version "1.1.0-beta.9"
   resolved "https://registry.yarnpkg.com/@dxos/codec-protobuf/-/codec-protobuf-1.1.0-beta.9.tgz#7bd9dba4c0463f3469e76b9bcb0ba2c30f5e1f8a"
   integrity sha512-NDBzJrS1sAaHJvCEMuO7BA4LR+UYnkkTHu6Pi+ILuZQzr4Jj/wadFRxCP36Dj/j6gVd0G4n7wIJy0BxewLOQgQ==
@@ -887,21 +878,6 @@
     end-of-stream "^1.4.4"
     ngraph.generators "^18.0.1"
     ngraph.graph "^19.0.3"
-    source-map-support "^0.5.12"
-
-"@dxos/protocol@^0.0.9":
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/@dxos/protocol/-/protocol-0.0.9.tgz#39bbf98c19987a856fcdf1c91dd7b7e1a3d06f12"
-  integrity sha512-qJXh8ESD0oL4hfG7kv1KCuKRnv0CPgz246Q0vzW90wtombVtXtuQtND7bH1TwCuYc0327NaFF2qZ8FctJrivwg==
-  dependencies:
-    "@dxos/broadcast" "^0.0.1"
-    "@dxos/codec-protobuf" "^1.1.0-beta.2"
-    assert "^2.0.0"
-    buffer-json-encoding "^1.0.2"
-    debug "^4.1.1"
-    end-of-stream "^1.4.1"
-    humanhash "^1.0.4"
-    hypercore-protocol "^6.11.1"
     source-map-support "^0.5.12"
 
 "@evocateur/libnpmaccess@^3.1.2":

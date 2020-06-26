@@ -23,9 +23,7 @@ import { NetworkGenerator, topologies } from '@dxos/network-generator';
  * @returns {Promise<Peer>}
  */
 
-const kInitiator = Symbol('initiator');
-
-const isProtocol = protocol => typeof protocol === 'object' && protocol.toString().includes('Protocol');
+const isStream = stream => typeof stream === 'object' && typeof stream.pipe === 'function';
 
 export class ProtocolNetworkGenerator extends EventEmitter {
   /**
@@ -65,19 +63,23 @@ export class ProtocolNetworkGenerator extends EventEmitter {
         const peer = await this._createPeer(topic, id, peerOptions);
         assert(typeof peer === 'object', 'peer must be an object');
         assert(Buffer.isBuffer(peer.id), 'peer.id is required');
-        assert(typeof peer.createProtocol === 'function', 'peer.createProtocol is required and must be a function');
+        assert(typeof peer.createStream === 'function', 'peer.createStream is required and must be a function');
         return peer;
       },
-      createConnection: (fromPeer, toPeer) => {
-        const p1 = fromPeer.createProtocol({ topic, options: protocol });
+      createConnection: async (fromPeer, toPeer) => {
+        const r1 = fromPeer.createStream({ initiator: true, topic, channel: topic, options: protocol });
         // Target peer shouldn't get the topic, this help us to simulate the network like discovery-swarm/hyperswarm
-        const p2 = toPeer.createProtocol({ options: protocol });
-        assert(isProtocol(p1), 'protocol function must return a protocol instance');
-        assert(isProtocol(p2), 'protocol function must return a protocol instance');
+        const r2 = toPeer.createStream({ initiator: false, options: protocol });
+        assert(isStream(r1), 'createStream function must return a stream');
+        assert(isStream(r1), 'createStream function must return a stream');
 
-        const stream = pump(p1.stream, p2.stream, p1.stream);
+        const stream = pump(r1, r2, r1);
 
-        stream[kInitiator] = p1;
+        if (waitForFullConnection) {
+          await pEvent(r1, 'dxos-protocol-handshake', {
+            rejectionEvents: ['error', 'close']
+          });
+        }
 
         return stream;
       }
@@ -86,15 +88,6 @@ export class ProtocolNetworkGenerator extends EventEmitter {
     generator.on('error', err => this.emit('error', err));
 
     const network = await generator[topology](...parameters);
-
-    if (waitForFullConnection) {
-      await Promise.all(network.connections.map(conn => {
-        if (conn.stream.destroyed) throw new Error('connection destroyed');
-        if (conn.stream[kInitiator].connected) return;
-
-        return pEvent(conn.stream[kInitiator], 'handshake');
-      }));
-    }
 
     return network;
   }

@@ -302,6 +302,7 @@ export class Protocol extends NanoresourcePromise {
 
     log(`handshake: ${keyToHuman(this._stream.id)} <=> ${keyToHuman(this._stream.remoteId)}`);
     this.emit('handshake', this);
+    this._stream.emit('dxos-protocol-handshake', this);
     this._connected = true;
 
     this._stream.on('feed', async (discoveryKey) => {
