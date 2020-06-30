@@ -120,6 +120,10 @@ export class Protocol extends NanoresourcePromise {
     return this._connected;
   }
 
+  get initiator () {
+    return this._initiator;
+  }
+
   /**
    * Sets session data which is exchanged with the peer during the handshake.
    * @param {Object} data
@@ -222,6 +226,7 @@ export class Protocol extends NanoresourcePromise {
 
     this._init = true;
     this._discoveryKey = discoveryKey;
+    this._initiator = !!discoveryKey;
     this.open().catch(err => this.emit('error', err));
 
     return this;
