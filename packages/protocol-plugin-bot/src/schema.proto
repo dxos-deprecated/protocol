@@ -15,17 +15,33 @@ message Message {
 // Command to spawn a bot.
 message Spawn {
   // Bot WRN (e.g. wrn:bot:wireline.io/chess).
-  string bot_id = 1;
+  string botId = 1;
+}
+
+message SpawnResponse {
+  string botUID = 1;
+}
+
+// Command to invite bot to a party.
+message Invite {
+  // Bot UID.
+  string botUID = 1;
 
   // Topic the bot should swarm on to connect to peers (e.g. cd719a79f016e7de5250784e6db684d46589c3731a91a313810dc236bc8d8fe9).
   string topic = 2;
 
   // Options used to create the model (e.g. '{"type":"testing.item.Task","listId":"list-tasks"}').
   // TODO(egorgripasov): Move to typed sub message.
-  string model_options = 3;
+  string modelOptions = 3;
 
   // Invitation for the case of credentials usage.
   string invitation = 4;
+}
+
+message CommandResponse {
+  string status = 1;
+  string error = 2;
+  google.protobuf.Any options = 10;
 }
 
 // Command to obtain BotFactory status.
@@ -34,17 +50,31 @@ message GetStatus {
   google.protobuf.Any options = 1;
 }
 
+message Manage {
+  string botUID = 1;
+  string command = 2;
+  google.protobuf.Any options = 10;
+}
+
+message Reset {
+  // Any options (not used yet).
+  google.protobuf.Any options = 1;
+}
+
 message Status {
 
   message Bot {
     string type = 1;
-    string spec = 2;
-    string party = 3;
-    string started = 4;
+    string botUID = 2;
+    string started = 3;
+    string lastActive = 4;
+    bool stopped = 5;
+    repeated string parties = 6;
   }
 
   string version = 1;
   string uptime = 2;
+  string platform = 3;
   // Running bots.
   repeated Bot bots = 10;
 }
