@@ -11,8 +11,15 @@ import { Extension } from '@dxos/protocol';
 import { keyToString, keyToBuffer } from '@dxos/crypto';
 
 export const COMMAND_SPAWN = 'dxos.protocol.bot.Spawn';
+export const SPAWN_RESPONSE = 'dxos.protocol.bot.SpawnResponse';
+
 export const COMMAND_STATUS = 'dxos.protocol.bot.GetStatus';
 export const STATUS_RESPONSE = 'dxos.protocol.bot.Status';
+
+export const COMMAND_INVITE = 'dxos.protocol.bot.Invite';
+export const COMMAND_MANAGE = 'dxos.protocol.bot.Manage';
+export const COMMAND_RESET = 'dxos.protocol.bot.Reset';
+export const COMMAND_RESPONSE = 'dxos.protocol.bot.CommandResponse';
 
 /**
  * Bot protocol codec.
@@ -25,23 +32,43 @@ export const codec = new Codec('dxos.protocol.bot.Message')
 /**
  * Creates a new spawn command message.
  * @param {string} botId
- * @param {Buffer} topic
- * @param {string} modelOptions
- * @param {string} invitation
  */
-export const createSpawnCommand = (botId, topic, modelOptions, invitation) => {
+export const createSpawnCommand = (botId) => {
   assert(botId);
-  assert(topic);
-  assert(modelOptions);
-  assert(Buffer.isBuffer(topic));
 
   return {
     message: {
       __type_url: COMMAND_SPAWN,
-      botId,
-      topic: keyToString(topic),
-      modelOptions,
-      invitation
+      botId
+    }
+  };
+};
+
+/**
+ * Creates a new bot management command message.
+ * @param {string} botUID
+ * @param {string} command
+ */
+export const createBotManagementCommand = (botUID, command) => {
+  assert(botUID);
+  assert(command);
+
+  return {
+    message: {
+      __type_url: COMMAND_MANAGE,
+      botUID,
+      command
+    }
+  };
+};
+
+/**
+ * Creates reset command.
+ */
+export const createResetCommand = () => {
+  return {
+    message: {
+      __type_url: COMMAND_RESET
     }
   };
 };
@@ -63,13 +90,66 @@ export const createStatusCommand = () => {
  * @param {String} uptime
  * @param {Array} bots
  */
-export const createStatusResponse = (version, uptime, bots) => {
+export const createStatusResponse = (version, platform, uptime, bots) => {
   return {
     message: {
       __type_url: STATUS_RESPONSE,
       version,
+      platform,
       uptime,
       bots
+    }
+  };
+};
+
+/**
+ * Creates spawn response message.
+ * @param {String} botUID
+ */
+export const createSpawnResponse = (botUID) => {
+  return {
+    message: {
+      __type_url: SPAWN_RESPONSE,
+      botUID
+    }
+  };
+};
+
+/**
+ * Creates a new invitation command message.
+ * @param {string} botUID
+ * @param {Buffer} topic
+ * @param {string} modelOptions
+ * @param {string} invitation
+ */
+export const createInvitationCommand = (botUID, topic, modelOptions, invitation) => {
+  assert(botUID);
+  assert(topic);
+  assert(modelOptions);
+  assert(Buffer.isBuffer(topic));
+
+  return {
+    message: {
+      __type_url: COMMAND_INVITE,
+      botUID,
+      topic: keyToString(topic),
+      modelOptions,
+      invitation
+    }
+  };
+};
+
+/**
+ * Creates arbitrary response message.
+ * @param {boolean} status
+ * @param {String} error
+ */
+export const createCommandResponse = (status, error) => {
+  return {
+    message: {
+      __type_url: COMMAND_RESPONSE,
+      status,
+      error
     }
   };
 };

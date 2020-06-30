@@ -19,6 +19,22 @@
                     "botId": {
                       "type": "string",
                       "id": 1
+                    }
+                  }
+                },
+                "SpawnResponse": {
+                  "fields": {
+                    "botUID": {
+                      "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "Invite": {
+                  "fields": {
+                    "botUID": {
+                      "type": "string",
+                      "id": 1
                     },
                     "topic": {
                       "type": "string",
@@ -34,7 +50,47 @@
                     }
                   }
                 },
+                "CommandResponse": {
+                  "fields": {
+                    "status": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "error": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "options": {
+                      "type": "google.protobuf.Any",
+                      "id": 10
+                    }
+                  }
+                },
                 "GetStatus": {
+                  "fields": {
+                    "options": {
+                      "type": "google.protobuf.Any",
+                      "id": 1
+                    }
+                  }
+                },
+                "Manage": {
+                  "fields": {
+                    "botUID": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "command": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "options": {
+                      "type": "google.protobuf.Any",
+                      "id": 10
+                    }
+                  }
+                },
+                "Reset": {
                   "fields": {
                     "options": {
                       "type": "google.protobuf.Any",
@@ -52,6 +108,10 @@
                       "type": "string",
                       "id": 2
                     },
+                    "platform": {
+                      "type": "string",
+                      "id": 3
+                    },
                     "bots": {
                       "rule": "repeated",
                       "type": "Bot",
@@ -65,17 +125,26 @@
                           "type": "string",
                           "id": 1
                         },
-                        "spec": {
+                        "botUID": {
                           "type": "string",
                           "id": 2
                         },
-                        "party": {
+                        "started": {
                           "type": "string",
                           "id": 3
                         },
-                        "started": {
+                        "lastActive": {
                           "type": "string",
                           "id": 4
+                        },
+                        "stopped": {
+                          "type": "bool",
+                          "id": 5
+                        },
+                        "parties": {
+                          "rule": "repeated",
+                          "type": "string",
+                          "id": 6
                         }
                       }
                     }
