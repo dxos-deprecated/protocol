@@ -60,7 +60,7 @@ const generator = new ProtocolNetworkGenerator(async (topic, peerId) => {
       const messages = [];
       const stream = feedStore.createReadStream();
       stream.on('data', (data) => {
-        messages.push(data);
+        messages.push(data.data);
       });
       return new Promise((resolve, reject) => {
         eos(stream, (err) => {

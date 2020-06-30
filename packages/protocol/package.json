@@ -64,7 +64,7 @@
     "del-cli": "^3.0.0",
     "jest": "^24.5.0",
     "pump": "^3.0.0",
-    "semistandard": "^14.2.0",
+    "semistandard": "14.2.0",
     "wait-for-expect": "^3.0.1"
   },
   "publishConfig": {
