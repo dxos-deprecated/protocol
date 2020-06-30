@@ -20,6 +20,8 @@ import {
 
 const log = debug('dxos:protocol');
 
+const kProtocol = Symbol('dxos.protocol');
+
 /**
  * Wraps a hypercore-protocol object.
  */
@@ -71,6 +73,7 @@ export class Protocol extends NanoresourcePromise {
     this._initTimeout = initTimeout;
 
     this._stream = protocol(this._streamOptions);
+    this._stream[kProtocol] = this;
 
     this._extensionInit = new ExtensionInit({ timeout: this._initTimeout });
 
@@ -302,7 +305,6 @@ export class Protocol extends NanoresourcePromise {
 
     log(`handshake: ${keyToHuman(this._stream.id)} <=> ${keyToHuman(this._stream.remoteId)}`);
     this.emit('handshake', this);
-    this._stream.emit('dxos-protocol-handshake', this);
     this._connected = true;
 
     this._stream.on('feed', async (discoveryKey) => {
@@ -369,3 +371,8 @@ export class Protocol extends NanoresourcePromise {
     extension.emit('extension-message', message);
   }
 }
+
+export const getProtocolFromStream = stream => {
+  assert(stream => typeof stream === 'object' && typeof stream.pipe === 'function', 'stream is required');
+  return stream[kProtocol];
+};

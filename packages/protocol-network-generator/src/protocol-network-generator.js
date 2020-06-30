@@ -8,6 +8,7 @@ import { EventEmitter } from 'events';
 import pump from 'pump';
 import pEvent from 'p-event';
 
+import { getProtocolFromStream } from '@dxos/protocol';
 import { NetworkGenerator, topologies } from '@dxos/network-generator';
 
 /**
@@ -76,7 +77,7 @@ export class ProtocolNetworkGenerator extends EventEmitter {
         const stream = pump(r1, r2, r1);
 
         if (waitForFullConnection) {
-          await pEvent(r1, 'dxos-protocol-handshake', {
+          await pEvent(getProtocolFromStream(r1), 'handshake', {
             rejectionEvents: ['error', 'close']
           });
         }
