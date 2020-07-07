@@ -21,6 +21,8 @@ export const COMMAND_MANAGE = 'dxos.protocol.bot.Manage';
 export const COMMAND_RESET = 'dxos.protocol.bot.Reset';
 export const COMMAND_RESPONSE = 'dxos.protocol.bot.CommandResponse';
 
+const DEFAULT_TIMEOUT = 60000;
+
 /**
  * Bot protocol codec.
  */
@@ -230,10 +232,10 @@ export class BotPlugin extends EventEmitter {
    * Create protocol extension.
    * @return {Extension}
    */
-  createExtension () {
+  createExtension (timeout = DEFAULT_TIMEOUT) {
     this._broadcast.run();
 
-    return new Extension(BotPlugin.EXTENSION_NAME)
+    return new Extension(BotPlugin.EXTENSION_NAME, { timeout })
       .setInitHandler((protocol) => {
         this._addPeer(protocol);
       })
