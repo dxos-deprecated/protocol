@@ -87,6 +87,7 @@ describe('test data replication in a balanced network graph of 15 peers', () => 
       topic,
       parameters: [1]
     });
+    expect(network.peers.length).toBe(15);
   });
 
   test('feed synchronization', async () => {
