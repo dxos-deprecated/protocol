@@ -85,11 +85,13 @@ describe('test data replication in a balanced network graph of 15 peers', () => 
   beforeAll(async () => {
     network = await generator.balancedBinTree({
       topic,
-      parameters: [1]
+      parameters: [3]
     });
   });
 
   test('feed synchronization', async () => {
+    expect(network.peers.length).toBe(15);
+
     await waitForExpect(() => {
       const result = network.peers.reduce((prev, peer) => {
         return prev && peer.getFeeds().length === network.peers.length;
