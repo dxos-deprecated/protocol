@@ -57,8 +57,14 @@ message Manage {
 }
 
 message Reset {
+  bool source = 1;
   // Any options (not used yet).
-  google.protobuf.Any options = 1;
+  google.protobuf.Any options = 10;
+}
+
+message Stop {
+  string errorCode = 1;
+  google.protobuf.Any options = 10;
 }
 
 message Status {

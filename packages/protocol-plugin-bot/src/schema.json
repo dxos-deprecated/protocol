@@ -92,9 +92,25 @@
                 },
                 "Reset": {
                   "fields": {
+                    "source": {
+                      "type": "bool",
+                      "id": 1
+                    },
                     "options": {
                       "type": "google.protobuf.Any",
+                      "id": 10
+                    }
+                  }
+                },
+                "Stop": {
+                  "fields": {
+                    "errorCode": {
+                      "type": "string",
                       "id": 1
+                    },
+                    "options": {
+                      "type": "google.protobuf.Any",
+                      "id": 10
                     }
                   }
                 },
