@@ -19,6 +19,7 @@ export const STATUS_RESPONSE = 'dxos.protocol.bot.Status';
 export const COMMAND_INVITE = 'dxos.protocol.bot.Invite';
 export const COMMAND_MANAGE = 'dxos.protocol.bot.Manage';
 export const COMMAND_RESET = 'dxos.protocol.bot.Reset';
+export const COMMAND_STOP = 'dxos.protocol.bot.Stop';
 export const COMMAND_RESPONSE = 'dxos.protocol.bot.CommandResponse';
 
 const DEFAULT_TIMEOUT = 60000;
@@ -67,10 +68,23 @@ export const createBotManagementCommand = (botUID, command) => {
 /**
  * Creates reset command.
  */
-export const createResetCommand = () => {
+export const createResetCommand = (source) => {
   return {
     message: {
-      __type_url: COMMAND_RESET
+      __type_url: COMMAND_RESET,
+      source
+    }
+  };
+};
+
+/**
+ * Creates stop command.
+ */
+export const createStopCommand = (errorCode) => {
+  return {
+    message: {
+      __type_url: COMMAND_STOP,
+      errorCode
     }
   };
 };
@@ -270,7 +284,7 @@ export class BotPlugin extends EventEmitter {
    * @param {object} command
    * @return {Promise<object>}
    */
-  async sendCommand (peerId, command) {
+  async sendCommand (peerId, command, oneway = false) {
     assert(peerId);
     assert(command);
     assert(Buffer.isBuffer(peerId));
@@ -282,10 +296,10 @@ export class BotPlugin extends EventEmitter {
     }
 
     const buffer = this._codec.encode(command);
-    const result = await peer.getExtension(BotPlugin.EXTENSION_NAME).send(buffer, { oneway: false });
+    const result = await peer.getExtension(BotPlugin.EXTENSION_NAME).send(buffer, { oneway });
 
     let response;
-    if (result.response && Buffer.isBuffer(result.response.data)) {
+    if (!oneway && result.response && Buffer.isBuffer(result.response.data)) {
       response = codec.decode(result.response.data);
     }
 
