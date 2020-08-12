@@ -163,7 +163,7 @@ export class Extension extends Nanomessage {
         await this._initHandler(this._protocol);
       }
     } catch (err) {
-      throw new ERR_EXTENSION_INIT_FAILED(err.message);
+      throw ERR_EXTENSION_INIT_FAILED.from(err);
     }
   }
 
@@ -179,7 +179,7 @@ export class Extension extends Nanomessage {
         await this._handshakeHandler(this._protocol);
       }
     } catch (err) {
-      throw new ERR_EXTENSION_HANDSHAKE_FAILED(err.message);
+      throw ERR_EXTENSION_HANDSHAKE_FAILED.from(err);
     }
   }
 
@@ -197,7 +197,7 @@ export class Extension extends Nanomessage {
         await this._feedHandler(this._protocol, discoveryKey);
       }
     } catch (err) {
-      throw new ERR_EXTENSION_FEED_FAILED(err.message);
+      throw ERR_EXTENSION_FEED_FAILED.from(err);
     }
   }
 
@@ -229,7 +229,7 @@ export class Extension extends Nanomessage {
       }
 
       if (NMSG_ERR_TIMEOUT.equals(err)) {
-        throw new ERR_EXTENSION_RESPONSE_TIMEOUT(err.message);
+        throw ERR_EXTENSION_RESPONSE_TIMEOUT.from(err);
       }
 
       throw new ERR_EXTENSION_RESPONSE_FAILED(err.code || 'Error', err.message);
@@ -255,7 +255,7 @@ export class Extension extends Nanomessage {
         await this._closeHandler(this._protocol);
       }
     } catch (err) {
-      throw new ERR_EXTENSION_CLOSE_FAILED(err.message);
+      throw ERR_EXTENSION_CLOSE_FAILED.from(err);
     }
   }
 

@@ -82,9 +82,9 @@ export class Protocol extends NanoresourcePromise {
     this._connected = false;
 
     this._handshakes = [];
-    this.on('error', error => {
-      log(error);
-    });
+
+    this._stream.on('error', err => this.emit('error', err));
+    this.on('error', error => log(error));
   }
 
   toString () {
@@ -227,7 +227,7 @@ export class Protocol extends NanoresourcePromise {
     this._init = true;
     this._discoveryKey = discoveryKey;
     this._initiator = !!discoveryKey;
-    this.open().catch(err => this.emit('error', err));
+    this.open().catch(err => process.nextTick(() => this._stream.destroy(err)));
 
     return this;
   }
@@ -243,8 +243,7 @@ export class Protocol extends NanoresourcePromise {
         await this._handshakeExtensions();
         this.emit('extensions-handshake');
       } catch (err) {
-        this._stream.destroy();
-        this.emit('error', err);
+        process.nextTick(() => this._stream.destroy(err));
       }
     });
 
@@ -260,10 +259,10 @@ export class Protocol extends NanoresourcePromise {
   async _close () {
     this._connected = false;
     this._stream.destroy();
-    await this._extensionInit.close().catch(err => this.emit('error', err));
+    await this._extensionInit.close().catch(err => process.nextTick(() => this._stream.destroy(err)));
     for (const [name, extension] of this._extensionMap) {
       log(`close extension "${name}"`);
-      await extension.close().catch(err => this.emit('error', err));
+      await extension.close().catch(err => process.nextTick(() => this._stream.destroy(err)));
     }
   }
 
@@ -284,6 +283,8 @@ export class Protocol extends NanoresourcePromise {
   }
 
   async _initExtensions () {
+    let exitError;
+
     try {
       for (const [name, extension] of this._extensionMap) {
         log(`init extension "${name}": ${keyToHuman(this._stream.id)} <=> ${keyToHuman(this._stream.remoteId)}`);
@@ -292,9 +293,12 @@ export class Protocol extends NanoresourcePromise {
 
       await this._extensionInit.continue();
     } catch (err) {
-      await this._extensionInit.break();
+      exitError = err;
+    }
 
-      throw err;
+    if (exitError) {
+      await this._extensionInit.break();
+      throw exitError;
     }
   }
 
@@ -319,7 +323,7 @@ export class Protocol extends NanoresourcePromise {
           await extension.onFeed(discoveryKey);
         }
       } catch (err) {
-        this.emit('error', err);
+        process.nextTick(() => this._stream.destroy(err));
       }
     });
   }
@@ -338,12 +342,11 @@ export class Protocol extends NanoresourcePromise {
         this._feed = this._stream.feed(initialKey);
         this._feed.on('extension', this._extensionHandler);
       } catch (err) {
-        if (ERR_PROTOCOL_CONNECTION_INVALID.equals(err)) {
-          this.emit('error', err);
-        } else {
-          this.emit('error', new ERR_PROTOCOL_CONNECTION_INVALID(err.message));
+        let newErr = err;
+        if (!ERR_PROTOCOL_CONNECTION_INVALID.equals(newErr)) {
+          newErr = ERR_PROTOCOL_CONNECTION_INVALID.from(newErr);
         }
-        this._stream.destroy();
+        process.nextTick(() => this._stream.destroy(newErr));
       }
     };
 
@@ -368,8 +371,7 @@ export class Protocol extends NanoresourcePromise {
 
     const extension = this._extensionMap.get(name);
     if (!extension) {
-      this.emit('error', new ERR_PROTOCOL_EXTENSION_MISSING(name));
-      this._stream.destroy();
+      process.nextTick(() => this._stream.destroy(new ERR_PROTOCOL_EXTENSION_MISSING(name)));
       return;
     }
 

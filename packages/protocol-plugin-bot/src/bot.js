@@ -330,6 +330,8 @@ export class BotPlugin extends EventEmitter {
     console.assert(protocol);
 
     const { peerId } = protocol.getSession();
+    if (!peerId) return;
+
     this._peers.delete(keyToString(peerId));
     this.emit('peer:exited', peerId);
   }

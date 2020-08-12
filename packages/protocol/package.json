@@ -43,7 +43,7 @@
     "end-of-stream": "^1.4.1",
     "humanhash": "^1.0.4",
     "hypercore-protocol": "^6.11.1",
-    "nanoerror": "^1.1.0",
+    "nanoerror": "^1.2.1",
     "nanomessage": "^5.4.0",
     "nanoresource-promise": "^2.0.0",
     "signal-promise": "^1.0.3",
