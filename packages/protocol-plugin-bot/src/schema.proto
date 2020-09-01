@@ -16,6 +16,16 @@ message Message {
 message Spawn {
   // Bot WRN (e.g. wrn:bot:wireline.io/chess).
   string botId = 1;
+
+  message SpawnOptions {
+    string id = 1;
+    string name = 2;
+    string env = 3;
+    string ipfsCID = 4;
+    string ipfsEndpoint = 5;
+  }
+
+  SpawnOptions options = 2;
 }
 
 message SpawnResponse {
