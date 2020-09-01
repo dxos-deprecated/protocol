@@ -19,6 +19,36 @@
                     "botId": {
                       "type": "string",
                       "id": 1
+                    },
+                    "options": {
+                      "type": "SpawnOptions",
+                      "id": 2
+                    }
+                  },
+                  "nested": {
+                    "SpawnOptions": {
+                      "fields": {
+                        "id": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "name": {
+                          "type": "string",
+                          "id": 2
+                        },
+                        "env": {
+                          "type": "string",
+                          "id": 3
+                        },
+                        "ipfsCID": {
+                          "type": "string",
+                          "id": 4
+                        },
+                        "ipfsEndpoint": {
+                          "type": "string",
+                          "id": 5
+                        }
+                      }
                     }
                   }
                 },

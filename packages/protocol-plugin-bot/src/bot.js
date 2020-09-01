@@ -36,13 +36,14 @@ export const codec = new Codec('dxos.protocol.bot.Message')
  * Creates a new spawn command message.
  * @param {string} botId
  */
-export const createSpawnCommand = (botId) => {
+export const createSpawnCommand = (botId, options) => {
   assert(botId);
 
   return {
     message: {
       __type_url: COMMAND_SPAWN,
-      botId
+      botId,
+      options
     }
   };
 };
