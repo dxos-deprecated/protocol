@@ -22,7 +22,10 @@ jest.setTimeout(TIMEOUT);
 const random = arr => arr[Math.floor(Math.random() * arr.length)];
 
 const generator = new ProtocolNetworkGenerator((topic, peerId) => {
-  const presence = new Presence(peerId);
+  const presence = new Presence(peerId, {
+    metadata: { shareStr: 'test1', shareBuf: Buffer.from('test2') }
+  });
+
   const createStream = () => new Protocol({
     streamOptions: {
       live: true
@@ -87,6 +90,10 @@ test('presence', async () => {
 
     expect(result).toBe(true);
   }, TIMEOUT, 5 * 1000);
+
+  peer1.presence.graph.forEachNode(node => {
+    expect(node.data.metadata).toEqual({ shareStr: 'test1', shareBuf: Buffer.from('test2') });
+  });
 
   log('network full connected');
 

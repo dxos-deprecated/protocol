@@ -16,6 +16,10 @@
                       "rule": "repeated",
                       "type": "Connection",
                       "id": 2
+                    },
+                    "metadata": {
+                      "type": "bytes",
+                      "id": 3
                     }
                   },
                   "nested": {

@@ -6,6 +6,8 @@ import { EventEmitter } from 'events';
 import createGraph from 'ngraph.graph';
 import debug from 'debug';
 import queueMicrotask from 'queue-microtask';
+import bufferJson from 'buffer-json-encoding';
+import pLimit from 'p-limit';
 
 import { Extension } from '@dxos/protocol';
 import { Broadcast } from '@dxos/broadcast';
@@ -31,7 +33,7 @@ export class Presence extends EventEmitter {
 
     console.assert(Buffer.isBuffer(peerId));
 
-    const { peerTimeout = 2 * 60 * 1000 } = options;
+    const { peerTimeout = 2 * 60 * 1000, metadata } = options;
 
     this._peerId = peerId;
     this._peerTimeout = peerTimeout;
@@ -39,6 +41,8 @@ export class Presence extends EventEmitter {
       .addJson(JSON.parse(schema))
       .build();
     this._neighbors = new Map();
+    this._metadata = metadata;
+    this._limit = pLimit(1);
 
     this._buildGraph();
     this._buildBroadcast();
@@ -64,6 +68,14 @@ export class Presence extends EventEmitter {
     return this._graph;
   }
 
+  get metadata () {
+    return this._metadata;
+  }
+
+  setMetadata (metadata) {
+    this._metadata = metadata;
+  }
+
   /**
    * Create protocol extension.
    * @return {Extension}
@@ -72,29 +84,13 @@ export class Presence extends EventEmitter {
     this.start();
 
     return new Extension(Presence.EXTENSION_NAME)
-      .setInitHandler((protocol) => {
-        this._addPeer(protocol);
-      })
-      .setMessageHandler(this._peerMessageHandler.bind(this))
-      .setCloseHandler((protocol) => {
-        this._removePeer(protocol);
-      });
+      .setInitHandler((protocol) => this._addPeer(protocol))
+      .setMessageHandler((protocol, chunk) => this._peerMessageHandler(protocol, chunk))
+      .setCloseHandler((protocol) => this._removePeer(protocol));
   }
 
-  async ping () {
-    try {
-      const message = {
-        peerId: this._peerId,
-        connections: Array.from(this._neighbors.values()).map((peer) => {
-          const { peerId } = peer.getSession();
-          return { peerId };
-        })
-      };
-      await this._broadcast.publish(this._codec.encode(message));
-      log('ping', message);
-    } catch (err) {
-      this.emit('error', err);
-    }
+  ping () {
+    return this._limit(() => this._ping());
   }
 
   start () {
@@ -118,7 +114,7 @@ export class Presence extends EventEmitter {
 
   _buildGraph () {
     this._graph = createGraph();
-    this._graph.addNode(this._peerId.toString('hex'));
+    this._graph.addNode(this._peerId.toString('hex'), { metadata: this._metadata });
     this._graph.on('changed', (changes) => {
       let graphUpdated = false;
 
@@ -169,7 +165,11 @@ export class Presence extends EventEmitter {
       id: this._peerId
     });
 
-    this._broadcast.on('packet', packet => this.emit('remote-ping', this._codec.decode(packet.data)));
+    this._broadcast.on('packet', packet => {
+      packet = this._codec.decode(packet.data);
+      if (packet.metadata) packet.metadata = bufferJson.decode(packet.metadata);
+      this.emit('remote-ping', packet);
+    });
     this._broadcast.on('lookup-error', err => console.warn(err));
     this._broadcast.on('send-error', err => console.warn(err));
     this._broadcast.on('subscribe-error', err => console.warn(err));
@@ -217,16 +217,7 @@ export class Presence extends EventEmitter {
       return;
     }
 
-    this._graph.beginUpdate();
-
     this._neighbors.set(peerIdHex, protocol);
-    this._graph.addNode(peerIdHex, { lastUpdate: Date.now() });
-    const [source, target] = [this._peerId.toString('hex'), peerIdHex].sort();
-    if (!this._graph.hasLink(source, target)) {
-      this._graph.addLink(source, target);
-    }
-
-    this._graph.endUpdate();
 
     this.emit('neighbor:joined', peerId, protocol);
     this.ping();
@@ -261,18 +252,18 @@ export class Presence extends EventEmitter {
     });
   }
 
-  _updateGraph ({ peerId: from, connections = [] }) {
+  _updateGraph ({ peerId: from, connections = [], metadata }) {
     const fromHex = from.toString('hex');
 
     const lastUpdate = Date.now();
 
     this._graph.beginUpdate();
 
-    this._graph.addNode(fromHex, { lastUpdate });
+    this._graph.addNode(fromHex, { lastUpdate, metadata });
 
     connections = connections.map(({ peerId }) => {
       peerId = peerId.toString('hex');
-      this._graph.addNode(peerId, { lastUpdate });
+      this._graph.addNode(peerId, { lastUpdate, metadata });
       const [source, target] = [fromHex, peerId].sort();
       return { source, target };
     });
@@ -310,6 +301,25 @@ export class Presence extends EventEmitter {
     const links = this._graph.getLinks(id) || [];
     if (links.length === 0) {
       this._graph.removeNode(id);
+    }
+  }
+
+  async _ping () {
+    this._limit.clearQueue();
+
+    try {
+      const message = {
+        peerId: this._peerId,
+        connections: Array.from(this._neighbors.values()).map((peer) => {
+          const { peerId } = peer.getSession();
+          return { peerId };
+        }),
+        metadata: this._metadata && bufferJson.encode(this._metadata)
+      };
+      await this._broadcast.publish(this._codec.encode(message));
+      log('ping', message);
+    } catch (err) {
+      process.nextTick(() => this.emit('error', err));
     }
   }
 }

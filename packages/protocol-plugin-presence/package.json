@@ -39,8 +39,10 @@
     "@dxos/broadcast": "^1.0.0-beta.6",
     "@dxos/codec-protobuf": "^1.1.0-beta.9",
     "@dxos/protocol": "^1.1.0-beta.16",
+    "buffer-json-encoding": "^1.0.2",
     "debug": "^4.1.1",
     "ngraph.graph": "^19.0.1",
+    "p-limit": "^3.0.2",
     "queue-microtask": "^1.1.2",
     "source-map-support": "^0.5.12"
   },
