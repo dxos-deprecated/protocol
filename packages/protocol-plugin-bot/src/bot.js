@@ -34,13 +34,13 @@ export const codec = new Codec('dxos.protocol.bot.Message')
 
 /**
  * Creates a new spawn command message.
- * @param {string} botId
+ * @param {string} botName
  */
-export const createSpawnCommand = (botId, options) => {
+export const createSpawnCommand = (botName, options) => {
   return {
     message: {
       __type_url: COMMAND_SPAWN,
-      botId,
+      botName,
       options
     }
   };
@@ -48,17 +48,17 @@ export const createSpawnCommand = (botId, options) => {
 
 /**
  * Creates a new bot management command message.
- * @param {string} botUID
+ * @param {string} botId
  * @param {string} command
  */
-export const createBotManagementCommand = (botUID, command) => {
-  assert(botUID);
+export const createBotManagementCommand = (botId, command) => {
+  assert(botId);
   assert(command);
 
   return {
     message: {
       __type_url: COMMAND_MANAGE,
-      botUID,
+      botId,
       command
     }
   };
@@ -119,26 +119,26 @@ export const createStatusResponse = (version, platform, uptime, bots) => {
 
 /**
  * Creates spawn response message.
- * @param {String} botUID
+ * @param {String} botId
  */
-export const createSpawnResponse = (botUID) => {
+export const createSpawnResponse = (botId) => {
   return {
     message: {
       __type_url: SPAWN_RESPONSE,
-      botUID
+      botId
     }
   };
 };
 
 /**
  * Creates a new invitation command message.
- * @param {string} botUID
+ * @param {string} botId
  * @param {Buffer} topic
  * @param {string} modelOptions
  * @param {string} invitation
  */
-export const createInvitationCommand = (botUID, topic, modelOptions, invitation) => {
-  assert(botUID);
+export const createInvitationCommand = (botId, topic, modelOptions, invitation) => {
+  assert(botId);
   assert(topic);
   assert(modelOptions);
   assert(Buffer.isBuffer(topic));
@@ -146,7 +146,7 @@ export const createInvitationCommand = (botUID, topic, modelOptions, invitation)
   return {
     message: {
       __type_url: COMMAND_INVITE,
-      botUID,
+      botId,
       topic: keyToString(topic),
       modelOptions,
       invitation

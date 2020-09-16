@@ -16,7 +16,7 @@
                 },
                 "Spawn": {
                   "fields": {
-                    "botId": {
+                    "botName": {
                       "type": "string",
                       "id": 1
                     },
@@ -54,7 +54,7 @@
                 },
                 "SpawnResponse": {
                   "fields": {
-                    "botUID": {
+                    "botId": {
                       "type": "string",
                       "id": 1
                     }
@@ -62,7 +62,7 @@
                 },
                 "Invite": {
                   "fields": {
-                    "botUID": {
+                    "botId": {
                       "type": "string",
                       "id": 1
                     },
@@ -106,7 +106,7 @@
                 },
                 "Manage": {
                   "fields": {
-                    "botUID": {
+                    "botId": {
                       "type": "string",
                       "id": 1
                     },
@@ -171,7 +171,7 @@
                           "type": "string",
                           "id": 1
                         },
-                        "botUID": {
+                        "botId": {
                           "type": "string",
                           "id": 2
                         },
