@@ -280,13 +280,17 @@
                 },
                 "BotEvent": {
                   "fields": {
-                    "type": {
+                    "botId": {
                       "type": "string",
                       "id": 1
                     },
+                    "type": {
+                      "type": "string",
+                      "id": 2
+                    },
                     "data": {
                       "type": "bytes",
-                      "id": 2
+                      "id": 3
                     }
                   }
                 }

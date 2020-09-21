@@ -113,15 +113,18 @@ export const createBotCommandResponse = (data, error) => {
 
 /**
  * Create Bot event.
+ * @param {string} botId
  * @param {string} type
  * @param {Buffer} data
  */
-export const createEvent = (type, data) => {
+export const createEvent = (botId, type, data) => {
+  assert(botId);
   assert(type);
 
   return {
     message: {
       __type_url: BOT_EVENT,
+      botId,
       type,
       data
     }

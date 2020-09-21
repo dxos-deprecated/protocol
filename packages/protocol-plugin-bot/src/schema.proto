@@ -135,6 +135,7 @@ message BotCommandResponse {
 }
 
 message BotEvent {
-  string type = 1;
-  bytes data = 2;
+  string botId = 1;
+  string type = 2;
+  bytes data = 3;
 }
