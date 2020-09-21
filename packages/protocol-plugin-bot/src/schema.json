@@ -195,6 +195,100 @@
                       }
                     }
                   }
+                },
+                "SignChallenge": {
+                  "fields": {
+                    "message": {
+                      "type": "bytes",
+                      "id": 1
+                    }
+                  }
+                },
+                "SignChallengeResponse": {
+                  "fields": {
+                    "signature": {
+                      "type": "bytes",
+                      "id": 1
+                    }
+                  }
+                },
+                "ConfirmConnection": {
+                  "fields": {
+                    "botId": {
+                      "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "InvitationMessage": {
+                  "fields": {
+                    "invitation": {
+                      "type": "Invitation",
+                      "id": 1
+                    },
+                    "topic": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  },
+                  "nested": {
+                    "Invitation": {
+                      "fields": {
+                        "swarmKey": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "invitation": {
+                          "type": "string",
+                          "id": 2
+                        },
+                        "hash": {
+                          "type": "string",
+                          "id": 3
+                        },
+                        "type": {
+                          "type": "string",
+                          "id": 4
+                        }
+                      }
+                    }
+                  }
+                },
+                "BotCommand": {
+                  "fields": {
+                    "botId": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "command": {
+                      "type": "bytes",
+                      "id": 2
+                    }
+                  }
+                },
+                "BotCommandResponse": {
+                  "fields": {
+                    "data": {
+                      "type": "bytes",
+                      "id": 1
+                    },
+                    "error": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "BotEvent": {
+                  "fields": {
+                    "type": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "data": {
+                      "type": "bytes",
+                      "id": 2
+                    }
+                  }
                 }
               }
             }

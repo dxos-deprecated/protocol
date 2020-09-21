@@ -94,3 +94,47 @@ message Status {
   // Running bots.
   repeated Bot bots = 10;
 }
+
+//
+// Communication with bot.
+//
+
+message SignChallenge {
+  bytes message = 1;
+}
+
+message SignChallengeResponse {
+  bytes signature = 1;
+}
+
+message ConfirmConnection {
+  string botId = 1;
+}
+
+message InvitationMessage {
+
+  message Invitation {
+    string swarmKey = 1;
+    string invitation = 2;
+    string hash = 3;
+    string type = 4;
+  }
+
+  Invitation invitation = 1;
+  string topic = 2;
+}
+
+message BotCommand {
+  string botId = 1;
+  bytes command = 2;
+}
+
+message BotCommandResponse {
+  bytes data = 1;
+  string error = 2;
+}
+
+message BotEvent {
+  string type = 1;
+  bytes data = 2;
+}
