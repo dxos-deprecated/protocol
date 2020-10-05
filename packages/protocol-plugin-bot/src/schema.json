@@ -167,30 +167,34 @@
                   "nested": {
                     "Bot": {
                       "fields": {
-                        "type": {
+                        "id": {
                           "type": "string",
                           "id": 1
                         },
-                        "botId": {
+                        "type": {
                           "type": "string",
                           "id": 2
                         },
-                        "started": {
+                        "botId": {
                           "type": "string",
                           "id": 3
                         },
-                        "lastActive": {
+                        "started": {
                           "type": "string",
                           "id": 4
                         },
+                        "lastActive": {
+                          "type": "string",
+                          "id": 5
+                        },
                         "stopped": {
                           "type": "bool",
-                          "id": 5
+                          "id": 6
                         },
                         "parties": {
                           "rule": "repeated",
                           "type": "string",
-                          "id": 6
+                          "id": 7
                         }
                       }
                     }

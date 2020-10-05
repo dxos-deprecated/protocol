@@ -80,12 +80,13 @@ message Stop {
 message Status {
 
   message Bot {
-    string type = 1;
-    string botId = 2;
-    string started = 3;
-    string lastActive = 4;
-    bool stopped = 5;
-    repeated string parties = 6;
+    string id = 1;
+    string type = 2;
+    string botId = 3;
+    string started = 4;
+    string lastActive = 5;
+    bool stopped = 6;
+    repeated string parties = 7;
   }
 
   string version = 1;
