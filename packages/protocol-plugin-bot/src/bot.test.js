@@ -9,7 +9,8 @@ import waitForExpect from 'wait-for-expect';
 
 import { Protocol } from '@dxos/protocol';
 
-import { BotPlugin, createSpawnCommand } from './bot';
+import { BotPlugin } from './bot';
+import { createSpawnCommand } from './botkit-messages';
 
 const random = arr => arr[Math.floor(Math.random() * arr.length)];
 
