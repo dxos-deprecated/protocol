@@ -16,7 +16,7 @@
                 },
                 "Spawn": {
                   "fields": {
-                    "botId": {
+                    "botName": {
                       "type": "string",
                       "id": 1
                     },
@@ -54,7 +54,7 @@
                 },
                 "SpawnResponse": {
                   "fields": {
-                    "botUID": {
+                    "botId": {
                       "type": "string",
                       "id": 1
                     }
@@ -62,7 +62,7 @@
                 },
                 "Invite": {
                   "fields": {
-                    "botUID": {
+                    "botId": {
                       "type": "string",
                       "id": 1
                     },
@@ -106,7 +106,7 @@
                 },
                 "Manage": {
                   "fields": {
-                    "botUID": {
+                    "botId": {
                       "type": "string",
                       "id": 1
                     },
@@ -167,32 +167,134 @@
                   "nested": {
                     "Bot": {
                       "fields": {
-                        "type": {
+                        "id": {
                           "type": "string",
                           "id": 1
                         },
-                        "botUID": {
+                        "type": {
                           "type": "string",
                           "id": 2
                         },
-                        "started": {
+                        "botId": {
                           "type": "string",
                           "id": 3
                         },
-                        "lastActive": {
+                        "started": {
                           "type": "string",
                           "id": 4
                         },
+                        "lastActive": {
+                          "type": "string",
+                          "id": 5
+                        },
                         "stopped": {
                           "type": "bool",
-                          "id": 5
+                          "id": 6
                         },
                         "parties": {
                           "rule": "repeated",
                           "type": "string",
-                          "id": 6
+                          "id": 7
                         }
                       }
+                    }
+                  }
+                },
+                "SignChallenge": {
+                  "fields": {
+                    "message": {
+                      "type": "bytes",
+                      "id": 1
+                    }
+                  }
+                },
+                "SignChallengeResponse": {
+                  "fields": {
+                    "signature": {
+                      "type": "bytes",
+                      "id": 1
+                    }
+                  }
+                },
+                "ConfirmConnection": {
+                  "fields": {
+                    "botId": {
+                      "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "InvitationMessage": {
+                  "fields": {
+                    "invitation": {
+                      "type": "Invitation",
+                      "id": 1
+                    },
+                    "topic": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  },
+                  "nested": {
+                    "Invitation": {
+                      "fields": {
+                        "swarmKey": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "invitation": {
+                          "type": "string",
+                          "id": 2
+                        },
+                        "hash": {
+                          "type": "string",
+                          "id": 3
+                        },
+                        "type": {
+                          "type": "string",
+                          "id": 4
+                        }
+                      }
+                    }
+                  }
+                },
+                "BotCommand": {
+                  "fields": {
+                    "botId": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "command": {
+                      "type": "bytes",
+                      "id": 2
+                    }
+                  }
+                },
+                "BotCommandResponse": {
+                  "fields": {
+                    "data": {
+                      "type": "bytes",
+                      "id": 1
+                    },
+                    "error": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "BotEvent": {
+                  "fields": {
+                    "botId": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "type": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "data": {
+                      "type": "bytes",
+                      "id": 3
                     }
                   }
                 }

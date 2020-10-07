@@ -14,8 +14,8 @@ message Message {
 
 // Command to spawn a bot.
 message Spawn {
-  // Bot WRN (e.g. wrn:bot:wireline.io/chess).
-  string botId = 1;
+  // Bot WRN (e.g. wrn://example/bot/chess).
+  string botName = 1;
 
   message SpawnOptions {
     string id = 1;
@@ -29,13 +29,13 @@ message Spawn {
 }
 
 message SpawnResponse {
-  string botUID = 1;
+  string botId = 1;
 }
 
 // Command to invite bot to a party.
 message Invite {
   // Bot UID.
-  string botUID = 1;
+  string botId = 1;
 
   // Topic the bot should swarm on to connect to peers (e.g. cd719a79f016e7de5250784e6db684d46589c3731a91a313810dc236bc8d8fe9).
   string topic = 2;
@@ -61,7 +61,7 @@ message GetStatus {
 }
 
 message Manage {
-  string botUID = 1;
+  string botId = 1;
   string command = 2;
   google.protobuf.Any options = 10;
 }
@@ -80,12 +80,13 @@ message Stop {
 message Status {
 
   message Bot {
-    string type = 1;
-    string botUID = 2;
-    string started = 3;
-    string lastActive = 4;
-    bool stopped = 5;
-    repeated string parties = 6;
+    string id = 1;
+    string type = 2;
+    string botId = 3;
+    string started = 4;
+    string lastActive = 5;
+    bool stopped = 6;
+    repeated string parties = 7;
   }
 
   string version = 1;
@@ -93,4 +94,49 @@ message Status {
   string platform = 3;
   // Running bots.
   repeated Bot bots = 10;
+}
+
+//
+// Communication with bot.
+//
+
+message SignChallenge {
+  bytes message = 1;
+}
+
+message SignChallengeResponse {
+  bytes signature = 1;
+}
+
+message ConfirmConnection {
+  string botId = 1;
+}
+
+message InvitationMessage {
+
+  message Invitation {
+    string swarmKey = 1;
+    string invitation = 2;
+    string hash = 3;
+    string type = 4;
+  }
+
+  Invitation invitation = 1;
+  string topic = 2;
+}
+
+message BotCommand {
+  string botId = 1;
+  bytes command = 2;
+}
+
+message BotCommandResponse {
+  bytes data = 1;
+  string error = 2;
+}
+
+message BotEvent {
+  string botId = 1;
+  string type = 2;
+  bytes data = 3;
 }
