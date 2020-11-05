@@ -11,7 +11,7 @@
     "type": "git",
     "url": "git+https://github.com/dxos/protocol.git"
   },
-  "license": "GPL-3.0",
+  "license": "AGPL-3.0",
   "workspaces": {
     "packages": [
       "packages/*"
