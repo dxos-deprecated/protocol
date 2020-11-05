@@ -25,3 +25,5 @@ src/version.json
 .idea/workspace.xml
 
 dist/
+.idea/
+
