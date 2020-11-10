@@ -23,6 +23,7 @@ message Spawn {
     string env = 3;
     string ipfsCID = 4;
     string ipfsEndpoint = 5;
+    string botPath = 6;
   }
 
   SpawnOptions options = 2;

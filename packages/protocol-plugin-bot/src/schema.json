@@ -47,6 +47,10 @@
                         "ipfsEndpoint": {
                           "type": "string",
                           "id": 5
+                        },
+                        "botPath": {
+                          "type": "string",
+                          "id": 6
                         }
                       }
                     }
