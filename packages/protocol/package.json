@@ -15,8 +15,8 @@
     "dist",
     "index.js"
   ],
-  "main": "dist/index.js",
-  "browser": "dist/index.js",
+  "main": "dist/src/index.js",
+  "browser": "dist/src/index.js",
   "scripts": {
     "build": "npm run clean && npm run build:protobuf && tsc",
     "build:protobuf": "pbjs -t json src/schema.proto -o src/schema.json && cpy src/schema.json dist",
