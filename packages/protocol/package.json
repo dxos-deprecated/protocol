@@ -33,7 +33,7 @@
     "> 5%"
   ],
   "jest": {
-    "preset": "ts-jest/presets/default",
+    "preset": "ts-jest/presets/js-with-ts",
     "testEnvironment": "node"
   },
   "dependencies": {
