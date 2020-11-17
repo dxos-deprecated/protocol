@@ -15,7 +15,7 @@
     "dist",
     "index.js"
   ],
-  "main": "index.js",
+  "main": "dist/index.js",
   "browser": "dist/index.js",
   "scripts": {
     "build": "npm run clean && npm run build:protobuf && tsc",
@@ -28,6 +28,7 @@
     "test": "jest --verbose --passWithNoTests src",
     "posttest": "npm run lint"
   },
+  "types": "dist/src/index.d.ts",
   "browserslist": [
     "> 5%"
   ],
