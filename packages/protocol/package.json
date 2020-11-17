@@ -24,7 +24,7 @@
     "clean": "del-cli dist",
     "coverage": "npm test -- --coverage",
     "coveralls": "npm run coverage && cat ./coverage/lcov.info | coveralls",
-    "lint": "eslint 'src/**/*.js'",
+    "lint": "eslint 'src/**/*.{js,ts}'",
     "prepublishOnly": "npm run build && npm run test",
     "test": "jest --verbose --passWithNoTests src",
     "posttest": "npm run lint"
