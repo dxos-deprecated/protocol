@@ -2,6 +2,10 @@
 // Copyright 2020 DxOS.
 //
 
+//
+// Copyright 2020 DXOS.org
+//
+
 import nanoerror from 'nanoerror';
 
 export const ERR_PROTOCOL_STREAM_CLOSED = nanoerror('ERR_PROTOCOL_STREAM_CLOSED', 'protocol closed');

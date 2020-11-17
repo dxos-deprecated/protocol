@@ -2,6 +2,10 @@
 // Copyright 2019 DxOS.
 //
 
+//
+// Copyright 2020 DXOS.org
+//
+
 import assert from 'assert';
 import HumanHasher from 'humanhash';
 

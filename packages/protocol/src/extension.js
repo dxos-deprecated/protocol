@@ -2,6 +2,10 @@
 // Copyright 2019 DxOS.
 //
 
+//
+// Copyright 2020 DXOS.org
+//
+
 import assert from 'assert';
 import debug from 'debug';
 import eos from 'end-of-stream';
@@ -9,8 +13,6 @@ import { Nanomessage, errors as nanomessageErrors } from 'nanomessage';
 
 import { Codec } from '@dxos/codec-protobuf';
 
-import { keyToHuman } from './utils';
-import schema from './schema.json';
 import {
   ERR_PROTOCOL_STREAM_CLOSED,
   ERR_EXTENSION_INIT_FAILED,
@@ -20,6 +22,8 @@ import {
   ERR_EXTENSION_RESPONSE_FAILED,
   ERR_EXTENSION_RESPONSE_TIMEOUT
 } from './errors';
+import schema from './schema.json';
+import { keyToHuman } from './utils';
 
 const { NMSG_ERR_TIMEOUT } = nanomessageErrors;
 
@@ -157,7 +161,9 @@ export class Extension extends Nanomessage {
   async onInit () {
     try {
       await this.open();
-      if (this._protocol.stream.destroyed) throw new ERR_PROTOCOL_STREAM_CLOSED();
+      if (this._protocol.stream.destroyed) {
+        throw new ERR_PROTOCOL_STREAM_CLOSED();
+      }
 
       if (this._initHandler) {
         await this._initHandler(this._protocol);
@@ -173,7 +179,9 @@ export class Extension extends Nanomessage {
   async onHandshake () {
     try {
       await this.open();
-      if (this._protocol.stream.destroyed) throw new ERR_PROTOCOL_STREAM_CLOSED();
+      if (this._protocol.stream.destroyed) {
+        throw new ERR_PROTOCOL_STREAM_CLOSED();
+      }
 
       if (this._handshakeHandler) {
         await this._handshakeHandler(this._protocol);
@@ -191,7 +199,9 @@ export class Extension extends Nanomessage {
   async onFeed (discoveryKey) {
     try {
       await this.open();
-      if (this._protocol.stream.destroyed) throw new ERR_PROTOCOL_STREAM_CLOSED();
+      if (this._protocol.stream.destroyed) {
+        throw new ERR_PROTOCOL_STREAM_CLOSED();
+      }
 
       if (this._feedHandler) {
         await this._feedHandler(this._protocol, discoveryKey);
@@ -209,7 +219,9 @@ export class Extension extends Nanomessage {
    * @returns {Promise<Object>} Response from peer.
    */
   async send (message, options = {}) {
-    if (this._protocol.stream.destroyed) throw new ERR_PROTOCOL_STREAM_CLOSED();
+    if (this._protocol.stream.destroyed) {
+      throw new ERR_PROTOCOL_STREAM_CLOSED();
+    }
 
     if (options.oneway) {
       return super.send(this._buildMessage(message));
@@ -239,7 +251,9 @@ export class Extension extends Nanomessage {
   // Nanomesssage interface
 
   async _open () {
-    if (this._protocol.stream.destroyed) throw new ERR_PROTOCOL_STREAM_CLOSED();
+    if (this._protocol.stream.destroyed) {
+      throw new ERR_PROTOCOL_STREAM_CLOSED();
+    }
 
     eos(this._protocol.stream, () => {
       this.close();
@@ -270,7 +284,9 @@ export class Extension extends Nanomessage {
   }
 
   _send (chunk) {
-    if (this._protocol.stream.destroyed) return;
+    if (this._protocol.stream.destroyed) {
+      return;
+    }
     this._protocol.feed.extension(this._name, chunk);
   }
 

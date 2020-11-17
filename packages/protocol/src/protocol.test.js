@@ -2,13 +2,17 @@
 // Copyright 2019 DxOS.
 //
 
+//
+// Copyright 2020 DXOS.org
+//
+
 import crypto from 'crypto';
 import debug from 'debug';
 import pump from 'pump';
 
+import { ERR_EXTENSION_RESPONSE_FAILED, ERR_EXTENSION_RESPONSE_TIMEOUT } from './errors';
 import { Extension } from './extension';
 import { Protocol } from './protocol';
-import { ERR_EXTENSION_RESPONSE_FAILED, ERR_EXTENSION_RESPONSE_TIMEOUT } from './errors';
 
 const log = debug('test');
 debug.enable('test,protocol');

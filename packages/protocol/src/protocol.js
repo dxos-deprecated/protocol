@@ -2,21 +2,24 @@
 // Copyright 2019 DxOS.
 //
 
-import assert from 'assert';
+//
+// Copyright 2020 DXOS.org
+//
 
-import debug from 'debug';
-import protocol from 'hypercore-protocol';
-import eos from 'end-of-stream';
+import assert from 'assert';
 import bufferJson from 'buffer-json-encoding';
+import debug from 'debug';
+import eos from 'end-of-stream';
+import protocol from 'hypercore-protocol';
 import { NanoresourcePromise } from 'nanoresource-promise/emitter';
 
-import { ExtensionInit } from './extension-init';
-import { keyToHuman } from './utils';
 import {
   ERR_PROTOCOL_CONNECTION_INVALID,
   ERR_PROTOCOL_HANDSHAKE_FAILED,
   ERR_PROTOCOL_EXTENSION_MISSING
 } from './errors';
+import { ExtensionInit } from './extension-init';
+import { keyToHuman } from './utils';
 
 const log = debug('dxos:protocol');
 

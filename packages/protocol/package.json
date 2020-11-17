@@ -23,7 +23,7 @@
     "clean": "del-cli dist",
     "coverage": "npm test -- --coverage",
     "coveralls": "npm run coverage && cat ./coverage/lcov.info | coveralls",
-    "lint": "semistandard 'src/**/*.js'",
+    "lint": "eslint 'src/**/*.js'",
     "prepublishOnly": "npm run build && npm run test",
     "test": "jest --verbose --passWithNoTests src",
     "posttest": "npm run lint"
@@ -49,24 +49,20 @@
     "source-map-support": "^0.5.12"
   },
   "devDependencies": {
+    "@dxos/eslint-plugin": "^1.0.8",
     "coveralls": "^3.0.7",
     "cpy-cli": "^2.0.0",
     "del-cli": "^3.0.0",
+    "eslint": "^7.13.0",
     "jest": "^24.5.0",
     "pump": "^3.0.0",
-    "semistandard": "14.2.0",
     "typescript": "^4.0.5",
     "wait-for-expect": "^3.0.1"
   },
   "publishConfig": {
     "access": "public"
   },
-  "semistandard": {
-    "parser": "babel-eslint",
-    "env": [
-      "jest",
-      "node",
-      "browser"
-    ]
+  "eslintConfig": {
+    "extends": "plugin:@dxos/recomended"
   }
 }
