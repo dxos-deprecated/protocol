@@ -4,7 +4,7 @@
 
 module.exports = {
   preset: 'ts-jest/presets/js-with-ts',
-  coverageDirectory: '../coverage',
+  rootDir: 'src',
   transformIgnorePatterns: [
     'node_modules'
   ],

@@ -75,7 +75,7 @@ export class Extension extends Nanomessage {
     this._name = name;
 
     this.codec = new Codec('dxos.protocol.Message')
-      .addJson(JSON.parse(schema));
+      .addJson(schema);
 
     if (userSchema) {
       this.codec.addJson(userSchema);
