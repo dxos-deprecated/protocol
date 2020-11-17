@@ -1,14 +1,14 @@
 //
-// Copyright 2019 DxOS.
+// Copyright 2020 DXOS.org
 //
 
 import crypto from 'crypto';
 import debug from 'debug';
 import pump from 'pump';
 
+import { ERR_EXTENSION_RESPONSE_FAILED, ERR_EXTENSION_RESPONSE_TIMEOUT } from './errors';
 import { Extension } from './extension';
 import { Protocol } from './protocol';
-import { ERR_EXTENSION_RESPONSE_FAILED, ERR_EXTENSION_RESPONSE_TIMEOUT } from './errors';
 
 const log = debug('test');
 debug.enable('test,protocol');
@@ -47,7 +47,7 @@ test('basic', async () => {
       expect(onInit).toHaveBeenCalledTimes(2);
     })
     .setExtension(new Extension(bufferExtension, { timeout })
-      .setInitHandler(async (protocol) => {
+      .setInitHandler(async () => {
         await sleep(2 * 1000);
         onInit();
       })
@@ -110,13 +110,16 @@ test('basic', async () => {
     try {
       await bufferMessages.send(Buffer.from('crash'));
     } catch (err) {
+      // eslint-disable-next-line
       expect(ERR_EXTENSION_RESPONSE_FAILED.equals(err)).toBe(true);
+      // eslint-disable-next-line
       expect(err.responseMessage).toBe('Invalid data.');
     }
 
     try {
       await bufferMessages.send(Buffer.from('timeout'));
     } catch (err) {
+      // eslint-disable-next-line
       expect(ERR_EXTENSION_RESPONSE_TIMEOUT.equals(err)).toBe(true); // timeout.
     }
 

@@ -1,11 +1,11 @@
 //
-// Copyright 2020 DxOS.
+// Copyright 2020 DXOS.org
 //
 
 import Signal from 'signal-promise';
 
-import { Extension } from './extension';
 import { ERR_PROTOCOL_INIT_INVALID } from './errors';
+import { Extension } from './extension';
 
 export class ExtensionInit extends Extension {
   constructor (options = {}) {
@@ -40,13 +40,17 @@ export class ExtensionInit extends Extension {
       await this.send(Buffer.from('continue'));
 
       if (this._remoteInit !== null) {
-        if (this._remoteInit) return;
+        if (this._remoteInit) {
+          return;
+        }
         throw new Error('remoteInit false');
       }
 
       await this._remoteSignal.wait(this._timeout);
 
-      if (this._remoteInit) return;
+      if (this._remoteInit) {
+        return;
+      }
       throw new Error('remoteInit false');
     } catch (err) {
       throw new ERR_PROTOCOL_INIT_INVALID(err.message);
@@ -55,7 +59,9 @@ export class ExtensionInit extends Extension {
 
   async break () {
     try {
-      if (this._remoteInit === false) return;
+      if (this._remoteInit === false) {
+        return;
+      }
 
       await this.send(Buffer.from('break'));
     } catch (err) {}
