@@ -37,7 +37,7 @@
     "testEnvironment": "node"
   },
   "dependencies": {
-    "@dxos/codec-protobuf": "^0.2.2",
+    "@dxos/codec-protobuf": "0.2.2",
     "assert": "^2.0.0",
     "buffer-json-encoding": "^1.0.2",
     "debug": "^4.1.1",
