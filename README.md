@@ -1,3 +1,5 @@
+# DEPRECATED: code is moved to dxos/mesh
+
 # @dxos/protocol
 
 [![Build Status](https://travis-ci.com/dxos/protocol.svg?branch=master)](https://travis-ci.com/dxos/protocol)
